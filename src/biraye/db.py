@@ -2,6 +2,7 @@
 
 One row per tracked ayah. The database lives at <repo>/data/biraye.db.
 """
+
 from __future__ import annotations
 
 import sqlite3

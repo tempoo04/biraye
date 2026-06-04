@@ -6,6 +6,7 @@ Public functions used by the API layer:
     get_queue(as_of)                 ayahs due on/before a date, by tier
     get_progress()                   counts per tier + totals
 """
+
 from __future__ import annotations
 
 from datetime import date
@@ -52,29 +53,22 @@ def add_item(surah: int, ayah: int, today: date | None = None) -> dict:
                VALUES (?, ?, 'sabaq', ?, 0, 0, 0, ?, ?)""",
             (surah, ayah, scheduler.EASE_DEFAULT, today.isoformat(), today.isoformat()),
         )
-        row = conn.execute(
-            "SELECT * FROM items WHERE surah=? AND ayah=?", (surah, ayah)
-        ).fetchone()
+        row = conn.execute("SELECT * FROM items WHERE surah=? AND ayah=?", (surah, ayah)).fetchone()
         return _row_to_dict(row)
 
 
-def review_item(
-    surah: int, ayah: int, rating: str, today: date | None = None
-) -> dict:
+def review_item(surah: int, ayah: int, rating: str, today: date | None = None) -> dict:
     """Apply a recall rating and reschedule the ayah."""
     today = today or date.today()
     with db.get_connection() as conn:
-        row = conn.execute(
-            "SELECT * FROM items WHERE surah=? AND ayah=?", (surah, ayah)
-        ).fetchone()
+        row = conn.execute("SELECT * FROM items WHERE surah=? AND ayah=?", (surah, ayah)).fetchone()
         if row is None:
             # auto-track then review, so a first encounter still works
             conn.execute(
                 """INSERT INTO items (surah, ayah, stage, ease, interval_days,
                                       reps, lapses, due, created)
                    VALUES (?, ?, 'sabaq', ?, 0, 0, 0, ?, ?)""",
-                (surah, ayah, scheduler.EASE_DEFAULT,
-                 today.isoformat(), today.isoformat()),
+                (surah, ayah, scheduler.EASE_DEFAULT, today.isoformat(), today.isoformat()),
             )
             row = conn.execute(
                 "SELECT * FROM items WHERE surah=? AND ayah=?", (surah, ayah)
@@ -89,14 +83,18 @@ def review_item(
                                 lapses=?, last_review=?, due=?
                WHERE surah=? AND ayah=?""",
             (
-                new_stage, new_state.ease, new_state.interval_days,
-                new_state.reps, new_state.lapses, today.isoformat(),
-                new_due.isoformat(), surah, ayah,
+                new_stage,
+                new_state.ease,
+                new_state.interval_days,
+                new_state.reps,
+                new_state.lapses,
+                today.isoformat(),
+                new_due.isoformat(),
+                surah,
+                ayah,
             ),
         )
-        out = conn.execute(
-            "SELECT * FROM items WHERE surah=? AND ayah=?", (surah, ayah)
-        ).fetchone()
+        out = conn.execute("SELECT * FROM items WHERE surah=? AND ayah=?", (surah, ayah)).fetchone()
         return _row_to_dict(out)
 
 
@@ -117,9 +115,7 @@ def get_queue(as_of: date | None = None) -> dict:
 
 def get_progress() -> dict:
     with db.get_connection() as conn:
-        rows = conn.execute(
-            "SELECT stage, COUNT(*) AS n FROM items GROUP BY stage"
-        ).fetchall()
+        rows = conn.execute("SELECT stage, COUNT(*) AS n FROM items GROUP BY stage").fetchall()
         total = conn.execute("SELECT COUNT(*) AS n FROM items").fetchone()["n"]
     by_stage = {"sabaq": 0, "sabqi": 0, "manzil": 0}
     for row in rows:

@@ -4,6 +4,7 @@ Serves a JSON API for Quran data and the static PWA frontend.
 Run: uvicorn biraye.app:app --reload   (from the src/ directory)
 or:  py -m uvicorn biraye.app:app --reload --app-dir src
 """
+
 from __future__ import annotations
 
 from datetime import date
@@ -84,9 +85,7 @@ def memorize(ref: AyahRef) -> dict:
 @app.post("/api/review")
 def review(payload: ReviewIn) -> dict:
     if payload.rating not in RATINGS:
-        raise HTTPException(
-            status_code=422, detail=f"rating must be one of {RATINGS}"
-        )
+        raise HTTPException(status_code=422, detail=f"rating must be one of {RATINGS}")
     return memory.review_item(payload.surah, payload.ayah, payload.rating)
 
 

@@ -16,6 +16,7 @@ UI can present the classic Hifz queues:
     sabqi  — recent material consolidating (1 .. <21 days)
     manzil — matured long-term material (>= 21 days)
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -53,13 +54,13 @@ FIRST_WORD_MIN_DAYS = 3
 
 
 def scaffold_for(interval_days: float) -> str:
-    if interval_days < SABQI_MIN_DAYS:        # new or just lapsed
-        return "full"                          # text + audio
+    if interval_days < SABQI_MIN_DAYS:  # new or just lapsed
+        return "full"  # text + audio
     if interval_days < FIRST_WORD_MIN_DAYS:
-        return "text"                          # text only, audio withdrawn
+        return "text"  # text only, audio withdrawn
     if interval_days < MANZIL_MIN_DAYS:
-        return "first_word"                    # first word visible, rest masked
-    return "hidden"                            # recite blind, reveal to self-check
+        return "first_word"  # first word visible, rest masked
+    return "hidden"  # recite blind, reveal to self-check
 
 
 def review(state: CardState, rating: str) -> CardState:

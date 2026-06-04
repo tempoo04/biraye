@@ -8,6 +8,7 @@ Editions used:
 
 Cache lives in <repo>/data/cache/. Once a surah is cached the app works offline.
 """
+
 from __future__ import annotations
 
 import json
@@ -95,9 +96,7 @@ def get_surah(number: int) -> dict:
 
     editions = ",".join([TEXT_EDITION, TRANSLATION_EDITION, AUDIO_EDITION])
     try:
-        resp = httpx.get(
-            f"{API_BASE}/surah/{number}/editions/{editions}", timeout=_TIMEOUT
-        )
+        resp = httpx.get(f"{API_BASE}/surah/{number}/editions/{editions}", timeout=_TIMEOUT)
         resp.raise_for_status()
         blocks = resp.json()["data"]
     except (httpx.HTTPError, KeyError, ValueError) as exc:

@@ -41,6 +41,13 @@ body {
   cursor: pointer;
 }
 .lang-btn:hover { background: rgba(255, 255, 255, 0.15); }
+.brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+}
+.logo { display: block; flex: 0 0 auto; }
 .topbar h1 { margin: 0; font-size: 1.6rem; letter-spacing: 0.5px; }
 .topbar .sub { font-size: 1.3rem; color: var(--gold); margin-inline-start: 0.4rem; }
 .tagline { margin: 0.3rem 0 0; opacity: 0.85; font-size: 0.9rem; }

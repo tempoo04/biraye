@@ -1,0 +1,15 @@
+# Render Blueprint — https://render.com/docs/blueprint-spec
+# Deploy: Render dashboard -> New -> Blueprint -> connect this repo.
+services:
+  - type: web
+    name: biraye
+    runtime: docker
+    plan: free
+    healthCheckPath: /api/health
+    autoDeploy: true
+    # SQLite is ephemeral on the free plan (data resets on each deploy).
+    # To persist later, move to a paid instance and uncomment a disk:
+    # disk:
+    #   name: biraye-data
+    #   mountPath: /app/data
+    #   sizeGB: 1

@@ -1,0 +1,23 @@
+# Keep the image small and clean
+.git
+.github
+.gitignore
+.claude
+.claude-flow
+.swarm
+.idea
+.vscode
+
+# Local data / caches (regenerated at runtime)
+data
+**/__pycache__
+*.pyc
+
+# Dev-only
+tests
+.pre-commit-config.yaml
+requirements-dev.txt
+pyproject.toml
+*.md
+.venv
+venv

@@ -1,13 +1,14 @@
 /* BirAye service worker — offline app shell + cached Quran data.
  *
  * Strategy:
- *   - app shell (same-origin GET for "/", /static/*) : cache-first
+ *   - app shell (same-origin GET for "/", /static/*) : network-first
+ *     (always fresh when online; falls back to cache offline)
  *   - API data   (/api/*)                            : stale-while-revalidate
  *   - audio CDN  (cross-origin)                       : network passthrough
  */
 "use strict";
 
-const VERSION = "biraye-v1";
+const VERSION = "biraye-v2";
 const SHELL = [
   "/",
   "/static/app.js",
@@ -46,19 +47,19 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  event.respondWith(cacheFirst(request));
+  event.respondWith(networkFirst(request));
 });
 
-async function cacheFirst(request) {
-  const cached = await caches.match(request);
-  if (cached) return cached;
+async function networkFirst(request) {
+  const cache = await caches.open(VERSION);
   try {
     const res = await fetch(request);
-    if (res.ok) (await caches.open(VERSION)).put(request, res.clone());
+    if (res.ok) cache.put(request, res.clone());
     return res;
   } catch (err) {
-    // navigation fallback to the cached app shell
-    const shell = await caches.match("/");
+    const cached = await cache.match(request);
+    if (cached) return cached;
+    const shell = await cache.match("/"); // navigation fallback
     if (shell) return shell;
     throw err;
   }

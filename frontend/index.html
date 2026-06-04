@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0d4f3c" />
+  <title>BirAye — Memorize the Quran</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <h1>BirAye <span class="sub">بِر آية</span></h1>
+    <p class="tagline">Stop forgetting what you memorize.</p>
+    <nav class="tabs">
+      <button id="tab-read" class="tab active" type="button">Read</button>
+      <button id="tab-review" class="tab" type="button">Review <span id="due-badge" class="badge" hidden>0</span></button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- READ VIEW -->
+    <div id="view-read">
+      <section id="picker" class="panel">
+        <label for="surah-select">Surah</label>
+        <select id="surah-select" aria-label="Choose a surah">
+          <option value="">Loading…</option>
+        </select>
+      </section>
+
+      <section id="reader" class="panel" hidden>
+        <div class="surah-head">
+          <h2 id="surah-title"></h2>
+          <p id="surah-meta" class="meta"></p>
+        </div>
+        <ol id="ayah-list" class="ayah-list"></ol>
+      </section>
+    </div>
+
+    <!-- REVIEW VIEW -->
+    <div id="view-review" hidden>
+      <section class="panel progress">
+        <div class="progress-chips">
+          <span class="chip chip-sabaq">Sabaq <b id="c-sabaq">0</b></span>
+          <span class="chip chip-sabqi">Sabqi <b id="c-sabqi">0</b></span>
+          <span class="chip chip-manzil">Manzil <b id="c-manzil">0</b></span>
+          <span class="chip chip-total">Total <b id="c-total">0</b></span>
+        </div>
+        <div class="asof">
+          <label for="asof-input">Review as of (test any day)</label>
+          <input id="asof-input" type="date" />
+        </div>
+      </section>
+
+      <section id="review-card" class="panel" hidden>
+        <p class="review-ref"><span id="rv-tier" class="tier-tag"></span> <span id="rv-ref"></span></p>
+        <p id="rv-scaffold" class="scaffold-note"></p>
+        <div id="rv-arabic" class="ayah-arabic"></div>
+        <p id="rv-translation" class="ayah-translation reveal-hidden"></p>
+        <div class="review-actions">
+          <button id="rv-listen" class="play-btn" type="button">▶ Listen</button>
+          <button id="rv-show" class="ghost-btn" type="button" hidden>Reveal ayah (self-check)</button>
+          <button id="rv-reveal" class="ghost-btn" type="button">Reveal translation</button>
+        </div>
+        <p class="rate-prompt">Recite from memory, then rate your recall:</p>
+        <div class="rate-buttons">
+          <button class="rate rate-again" data-rating="again" type="button">Again</button>
+          <button class="rate rate-hard" data-rating="hard" type="button">Hard</button>
+          <button class="rate rate-good" data-rating="good" type="button">Good</button>
+          <button class="rate rate-easy" data-rating="easy" type="button">Easy</button>
+        </div>
+      </section>
+
+      <section id="review-done" class="panel done" hidden>
+        <p>✅ Nothing due. Queue clear for this day.</p>
+        <p class="meta">Add ayahs from the Read tab, or advance the date to see scheduled reviews.</p>
+      </section>
+    </div>
+
+    <p id="status" class="status" role="status"></p>
+  </main>
+
+  <audio id="player" preload="none"></audio>
+  <script src="/static/app.js"></script>
+</body>
+</html>

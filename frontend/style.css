@@ -260,7 +260,8 @@ select {
   border-radius: 8px;
   font-size: 1rem;
 }
-.drill-reps { display: flex; gap: 0.6rem; margin: 0.9rem 0; }
+.drill-reps { display: flex; gap: 0.6rem; margin: 0.9rem 0; flex-wrap: wrap; }
+.drill-reps .cycle-btn { min-width: 7rem; }
 .cycle-btn {
   flex: 1;
   background: var(--bg);

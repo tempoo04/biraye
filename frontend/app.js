@@ -44,6 +44,7 @@ const els = {
   drillTo: document.getElementById("drill-to"),
   drillEach: document.getElementById("drill-each"),
   drillRangeRep: document.getElementById("drill-range-rep"),
+  drillSpeed: document.getElementById("drill-speed"),
   drillStart: document.getElementById("drill-start"),
   drillStop: document.getElementById("drill-stop"),
   drillNow: document.getElementById("drill-now"),
@@ -479,8 +480,10 @@ function exportCsv() {
 els.logExport.addEventListener("click", exportCsv);
 
 /* ---------- drill (repeat trainer) ---------- */
-const CYCLE = [1, 5, 10, Infinity];
-const cycleLabel = (v) => (v === Infinity ? "∞" : String(v));
+const REPS = [1, 2, 3, 4, 5, 10, Infinity];
+const SPEEDS = [0.5, 1, 1.5, 2];
+const repLabel = (v) => (v === Infinity ? "∞" : String(v));
+const speedLabel = (v) => `×${v}`;
 
 const drill = {
   active: false,
@@ -490,20 +493,26 @@ const drill = {
   pass: 0, // completed passes over the range
 };
 
-function cycleValue(btn) {
-  return CYCLE[Number(btn.dataset.idx || 0)];
+function valOf(btn) {
+  return btn._values[Number(btn.dataset.idx || 0)];
 }
 
-function setupCycle(btn) {
-  btn.dataset.idx = "0";
+function setupCycle(btn, values, startIdx, fmt, onChange) {
+  btn._values = values;
+  btn.dataset.idx = String(startIdx);
+  btn.querySelector("b").textContent = fmt(values[startIdx]);
   btn.addEventListener("click", () => {
-    const next = (Number(btn.dataset.idx) + 1) % CYCLE.length;
+    const next = (Number(btn.dataset.idx) + 1) % values.length;
     btn.dataset.idx = String(next);
-    btn.querySelector("b").textContent = cycleLabel(CYCLE[next]);
+    btn.querySelector("b").textContent = fmt(values[next]);
+    if (onChange) onChange(values[next]);
   });
 }
-setupCycle(els.drillEach);
-setupCycle(els.drillRangeRep);
+setupCycle(els.drillEach, REPS, 0, repLabel);
+setupCycle(els.drillRangeRep, REPS, 0, repLabel);
+setupCycle(els.drillSpeed, SPEEDS, 1, speedLabel, (v) => {
+  if (drill.active) els.player.playbackRate = v; // live speed change
+});
 
 function clampDrillRange() {
   const count = surahAyahCounts[els.drillSurah.value] || 1;
@@ -564,21 +573,22 @@ async function startDrill() {
 
 function playDrillCurrent() {
   const a = drill.slice[drill.idx];
-  const each = cycleValue(els.drillEach);
-  const range = cycleValue(els.drillRangeRep);
+  const each = valOf(els.drillEach);
+  const range = valOf(els.drillRangeRep);
   els.drillStatus.textContent =
     `Ayah ${drill.idx + 1}/${drill.slice.length} · ${els.drillSurah.value}:${a.ayah}` +
-    ` · play ${drill.plays + 1}/${cycleLabel(each)}` +
-    ` · pass ${drill.pass + 1}/${cycleLabel(range)}`;
+    ` · play ${drill.plays + 1}/${repLabel(each)}` +
+    ` · pass ${drill.pass + 1}/${repLabel(range)}`;
   els.drillArabic.innerHTML = escapeHtml(a.arabic);
   els.drillTranslation.textContent = a.translation;
   els.player.src = a.audio;
+  els.player.playbackRate = valOf(els.drillSpeed);
   els.player.play().catch((err) => setStatus(`Audio error: ${err.message}`, true));
 }
 
 function drillEnded() {
-  const each = cycleValue(els.drillEach);
-  const range = cycleValue(els.drillRangeRep);
+  const each = valOf(els.drillEach);
+  const range = valOf(els.drillRangeRep);
 
   drill.plays += 1;
   if (drill.plays < each) {
@@ -620,6 +630,7 @@ function togglePlay(url, btn) {
   }
   stopAudio();
   els.player.src = url;
+  els.player.playbackRate = 1; // drill speed must not leak into single playback
   els.player.play().catch((err) => setStatus(`Audio error: ${err.message}`, true));
   btn.classList.add("playing");
   btn.dataset.label = btn.textContent;

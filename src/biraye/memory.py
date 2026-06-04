@@ -113,6 +113,13 @@ def get_queue(as_of: date | None = None) -> dict:
     return grouped
 
 
+def get_log() -> list[dict]:
+    """Return every tracked ayah (the teacher's logbook), ordered by reference."""
+    with db.get_connection() as conn:
+        rows = conn.execute("SELECT * FROM items ORDER BY surah, ayah").fetchall()
+    return [_row_to_dict(r) for r in rows]
+
+
 def get_progress() -> dict:
     with db.get_connection() as conn:
         rows = conn.execute("SELECT stage, COUNT(*) AS n FROM items GROUP BY stage").fetchall()

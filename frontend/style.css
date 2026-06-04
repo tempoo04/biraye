@@ -238,3 +238,28 @@ select {
   padding: 0 0.15em;
   font-weight: 700;
 }
+
+/* ---- sleep-timed hint ---- */
+.sleep-hint {
+  background: #eef4f1;
+  border-inline-start: 4px solid var(--green-light);
+  border-radius: 8px;
+  padding: 0.6rem 0.8rem;
+  font-size: 0.85rem;
+  color: var(--green);
+  margin: 0 0 1rem;
+}
+
+/* ---- logbook ---- */
+.log-head { display: flex; justify-content: space-between; align-items: center; }
+.log-head h2 { margin: 0; color: var(--green); }
+.log-table-wrap { overflow-x: auto; margin-top: 0.6rem; }
+.log-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+.log-table th, .log-table td {
+  text-align: left;
+  padding: 0.45rem 0.5rem;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+.log-table th { color: var(--muted); font-weight: 600; }
+.log-table .tier-tag { font-size: 0.62rem; }

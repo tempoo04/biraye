@@ -108,6 +108,12 @@ def progress() -> dict:
     return memory.get_progress()
 
 
+@app.get("/api/log")
+def log() -> list[dict]:
+    """The teacher's logbook: every tracked ayah with its scheduling state."""
+    return memory.get_log()
+
+
 @app.get("/api/similar/{surah}/{ayah}")
 def similar(surah: int, ayah: int) -> dict:
     """Mutashabihat: verses similar to this one, with contrastive token diffs."""
@@ -121,6 +127,12 @@ def similar(surah: int, ayah: int) -> dict:
 @app.get("/")
 def index() -> FileResponse:
     return FileResponse(FRONTEND_DIR / "index.html")
+
+
+@app.get("/sw.js")
+def service_worker() -> FileResponse:
+    # served from root so its scope covers the whole app
+    return FileResponse(FRONTEND_DIR / "sw.js", media_type="application/javascript")
 
 
 app.mount("/static", StaticFiles(directory=FRONTEND_DIR), name="static")

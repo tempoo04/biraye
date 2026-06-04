@@ -4,9 +4,15 @@ const els = {
   // tabs / views
   tabRead: document.getElementById("tab-read"),
   tabReview: document.getElementById("tab-review"),
+  tabLog: document.getElementById("tab-log"),
   viewRead: document.getElementById("view-read"),
   viewReview: document.getElementById("view-review"),
+  viewLog: document.getElementById("view-log"),
   dueBadge: document.getElementById("due-badge"),
+  sleepHint: document.getElementById("sleep-hint"),
+  logBody: document.querySelector("#log-table tbody"),
+  logEmpty: document.getElementById("log-empty"),
+  logExport: document.getElementById("log-export"),
   // read
   select: document.getElementById("surah-select"),
   reader: document.getElementById("reader"),
@@ -103,16 +109,19 @@ async function loadSimilar(surah, ayah, container) {
 
 /* ---------- tabs ---------- */
 function showTab(which) {
-  const review = which === "review";
-  els.viewReview.hidden = !review;
-  els.viewRead.hidden = review;
-  els.tabReview.classList.toggle("active", review);
-  els.tabRead.classList.toggle("active", !review);
+  els.viewRead.hidden = which !== "read";
+  els.viewReview.hidden = which !== "review";
+  els.viewLog.hidden = which !== "log";
+  els.tabRead.classList.toggle("active", which === "read");
+  els.tabReview.classList.toggle("active", which === "review");
+  els.tabLog.classList.toggle("active", which === "log");
   stopAudio();
-  if (review) loadReview();
+  if (which === "review") loadReview();
+  if (which === "log") loadLog();
 }
 els.tabRead.addEventListener("click", () => showTab("read"));
 els.tabReview.addEventListener("click", () => showTab("review"));
+els.tabLog.addEventListener("click", () => showTab("log"));
 
 /* ---------- read view ---------- */
 async function loadSurahIndex() {
@@ -257,7 +266,23 @@ async function loadProgress() {
   }
 }
 
+function updateSleepHint() {
+  // Research: encode before sleep, cold-recall after waking. Nudge by local hour.
+  const h = new Date().getHours();
+  let msg = "";
+  if (h >= 20 || h < 2) {
+    msg = "🌙 Night session — encode new material and your hardest reviews now; " +
+      "sleep consolidates verbatim sequences.";
+  } else if (h >= 4 && h < 11) {
+    msg = "🌅 Morning — cold recall. Hide the audio and test what you slept on " +
+      "before adding anything new.";
+  }
+  els.sleepHint.textContent = msg;
+  els.sleepHint.hidden = !msg;
+}
+
 async function loadReview() {
+  updateSleepHint();
   if (!els.asof.value) els.asof.value = todayISO();
   await loadProgress();
   setStatus("Loading review queue…");
@@ -390,6 +415,47 @@ document.querySelectorAll(".rate").forEach((b) =>
 );
 els.asof.addEventListener("change", loadReview);
 
+/* ---------- log view (teacher's logbook) ---------- */
+let logRows = [];
+
+async function loadLog() {
+  try {
+    const res = await fetch("/api/log");
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    logRows = await res.json();
+  } catch (err) {
+    setStatus(`Could not load log: ${err.message}`, true);
+    return;
+  }
+  els.logBody.innerHTML = logRows
+    .map(
+      (r) => `<tr>
+        <td>${r.surah}:${r.ayah}</td>
+        <td><span class="tier-tag tier-${r.stage}">${r.stage}</span></td>
+        <td>${r.reps}</td>
+        <td>${r.lapses}</td>
+        <td>${r.last_review || "—"}</td>
+        <td>${r.due}</td>
+      </tr>`
+    )
+    .join("");
+  els.logEmpty.hidden = logRows.length > 0;
+}
+
+function exportCsv() {
+  if (!logRows.length) return;
+  const cols = ["surah", "ayah", "stage", "reps", "lapses", "ease", "interval_days", "last_review", "due"];
+  const lines = [cols.join(",")];
+  for (const r of logRows) lines.push(cols.map((c) => r[c] ?? "").join(","));
+  const blob = new Blob([lines.join("\n")], { type: "text/csv" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `biraye-log-${todayISO()}.csv`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+els.logExport.addEventListener("click", exportCsv);
+
 /* ---------- audio ---------- */
 function togglePlay(url, btn) {
   if (playingBtn === btn && !els.player.paused) {
@@ -418,3 +484,12 @@ els.player.addEventListener("ended", stopAudio);
 els.select.addEventListener("change", (e) => loadSurah(e.target.value));
 loadSurahIndex();
 refreshDueBadge();
+
+// PWA: register the service worker for installability + offline use
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/sw.js").catch(() => {
+      /* offline support unavailable — app still works online */
+    });
+  });
+}

@@ -5,6 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#0d4f3c" />
   <title>BirAye — Memorize the Quran</title>
+  <link rel="manifest" href="/static/manifest.webmanifest" />
+  <link rel="icon" href="/static/icon-192.png" />
+  <link rel="apple-touch-icon" href="/static/icon-192.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="BirAye" />
   <link rel="stylesheet" href="/static/style.css" />
 </head>
 <body>
@@ -14,6 +20,7 @@
     <nav class="tabs">
       <button id="tab-read" class="tab active" type="button">Read</button>
       <button id="tab-review" class="tab" type="button">Review <span id="due-badge" class="badge" hidden>0</span></button>
+      <button id="tab-log" class="tab" type="button">Log</button>
     </nav>
   </header>
 
@@ -38,6 +45,7 @@
 
     <!-- REVIEW VIEW -->
     <div id="view-review" hidden>
+      <p id="sleep-hint" class="sleep-hint" hidden></p>
       <section class="panel progress">
         <div class="progress-chips">
           <span class="chip chip-sabaq">Sabaq <b id="c-sabaq">0</b></span>
@@ -74,6 +82,26 @@
       <section id="review-done" class="panel done" hidden>
         <p>✅ Nothing due. Queue clear for this day.</p>
         <p class="meta">Add ayahs from the Read tab, or advance the date to see scheduled reviews.</p>
+      </section>
+    </div>
+
+    <!-- LOG VIEW (teacher's logbook) -->
+    <div id="view-log" hidden>
+      <section class="panel">
+        <div class="log-head">
+          <h2>Logbook</h2>
+          <button id="log-export" class="ghost-btn" type="button">Export CSV</button>
+        </div>
+        <p class="meta">A record of every tracked ayah — share with your teacher.</p>
+        <div class="log-table-wrap">
+          <table id="log-table" class="log-table">
+            <thead>
+              <tr><th>Ayah</th><th>Tier</th><th>Reps</th><th>Lapses</th><th>Last</th><th>Due</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <p id="log-empty" class="meta" hidden>Nothing tracked yet. Memorize some ayahs first.</p>
       </section>
     </div>
 

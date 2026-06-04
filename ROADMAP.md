@@ -17,7 +17,9 @@ Each milestone is a **runnable, testable increment**. You test before the next o
 | **M2** Three-tier scheduler | sabaq/sabqi/manzil queues, FSRS-lite review engine | Memorize Fātiḥa, see it scheduled, return next day | ✅ done |
 | **M3** Scaffold-withdrawal recall | Recall mode: audio fades (full → first-word → silent) + self-rate | Review an ayah with progressive hiding | ✅ done |
 | **M4** Mutashabihat engine | Similar-verse contrastive drilling + twin-surfacing | Two similar verses drilled side-by-side | ✅ done |
-| **M5** PWA + teacher-log + polish | Install on phone, sleep-timed prompts, teacher logbook, meaning gloss | Add to home screen; teacher sees student log | ⬜ next |
+| **M5** PWA + teacher-log + polish | Installable PWA, offline shell, sleep-timed hint, teacher logbook + CSV export | Add to home screen; export the log | ✅ done |
+
+*Deferred from M5 (optional future):* per-word meaning gloss for non-Arabic speakers (needs word-by-word translation data).
 
 ## Research foundation (why these features)
 

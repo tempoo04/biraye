@@ -250,6 +250,38 @@ select {
   margin: 0 0 1rem;
 }
 
+/* ---- drill (repeat trainer) ---- */
+.drill-range { display: flex; gap: 0.8rem; margin-top: 0.8rem; }
+.drill-range > div { flex: 1; }
+.drill-range input {
+  width: 100%;
+  padding: 0.6rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: 1rem;
+}
+.drill-reps { display: flex; gap: 0.6rem; margin: 0.9rem 0; }
+.cycle-btn {
+  flex: 1;
+  background: var(--bg);
+  border: 1px solid var(--green);
+  color: var(--green);
+  border-radius: 8px;
+  padding: 0.6rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+.cycle-btn b { font-size: 1.1rem; margin-inline-start: 0.2rem; }
+.cycle-btn:hover { background: #eef4f1; }
+.drill-controls { display: flex; gap: 0.6rem; }
+.drill-controls .rate { flex: 1; }
+.drill-now {
+  margin-top: 1rem;
+  padding-top: 0.8rem;
+  border-top: 1px solid var(--line);
+}
+.drill-status { font-size: 0.82rem; color: var(--green-light); font-weight: 600; margin: 0 0 0.6rem; }
+
 /* ---- logbook ---- */
 .log-head { display: flex; justify-content: space-between; align-items: center; }
 .log-head h2 { margin: 0; color: var(--green); }

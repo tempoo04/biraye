@@ -18,8 +18,9 @@ Each milestone is a **runnable, testable increment**. You test before the next o
 | **M3** Scaffold-withdrawal recall | Recall mode: audio fades (full → first-word → silent) + self-rate | Review an ayah with progressive hiding | ✅ done |
 | **M4** Mutashabihat engine | Similar-verse contrastive drilling + twin-surfacing | Two similar verses drilled side-by-side | ✅ done |
 | **M5** PWA + teacher-log + polish | Installable PWA, offline shell, sleep-timed hint, teacher logbook + CSV export | Add to home screen; export the log | ✅ done |
+| **M6** Repeat trainer (Drill) | Range player: pick surah + from/to ayah, per-ayah repeat ×(1/5/10/∞), whole-range repeat ×(1/5/10/∞) | Drill Baqarah 7→20, each ayah ×5, range ×∞ | ✅ done |
 
-*Deferred from M5 (optional future):* per-word meaning gloss for non-Arabic speakers (needs word-by-word translation data).
+*Deferred (optional future):* per-word meaning gloss for non-Arabic speakers (needs word-by-word translation data); speech-recognition mistake detection.
 
 ## Research foundation (why these features)
 

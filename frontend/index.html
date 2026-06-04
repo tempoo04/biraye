@@ -19,6 +19,7 @@
     <p class="tagline">Stop forgetting what you memorize.</p>
     <nav class="tabs">
       <button id="tab-read" class="tab active" type="button">Read</button>
+      <button id="tab-drill" class="tab" type="button">Drill</button>
       <button id="tab-review" class="tab" type="button">Review <span id="due-badge" class="badge" hidden>0</span></button>
       <button id="tab-log" class="tab" type="button">Log</button>
     </nav>
@@ -40,6 +41,47 @@
           <p id="surah-meta" class="meta"></p>
         </div>
         <ol id="ayah-list" class="ayah-list"></ol>
+      </section>
+    </div>
+
+    <!-- DRILL VIEW (repeat trainer) -->
+    <div id="view-drill" hidden>
+      <section class="panel">
+        <label for="drill-surah">Surah</label>
+        <select id="drill-surah" aria-label="Choose a surah for drilling">
+          <option value="">Loading…</option>
+        </select>
+
+        <div class="drill-range">
+          <div>
+            <label for="drill-from">From ayah</label>
+            <input id="drill-from" type="number" min="1" value="1" />
+          </div>
+          <div>
+            <label for="drill-to">To ayah</label>
+            <input id="drill-to" type="number" min="1" value="1" />
+          </div>
+        </div>
+
+        <div class="drill-reps">
+          <button id="drill-each" class="cycle-btn" type="button" data-val="1">
+            Each ayah ×<b>1</b>
+          </button>
+          <button id="drill-range-rep" class="cycle-btn" type="button" data-val="1">
+            Whole range ×<b>1</b>
+          </button>
+        </div>
+
+        <div class="drill-controls">
+          <button id="drill-start" class="rate rate-good" type="button">▶ Start drill</button>
+          <button id="drill-stop" class="ghost-btn" type="button" hidden>⏹ Stop</button>
+        </div>
+
+        <div id="drill-now" class="drill-now" hidden>
+          <p class="drill-status"></p>
+          <div class="ayah-arabic" id="drill-arabic"></div>
+          <p class="ayah-translation" id="drill-translation"></p>
+        </div>
       </section>
     </div>
 

@@ -3,9 +3,11 @@
 const els = {
   // tabs / views
   tabRead: document.getElementById("tab-read"),
+  tabDrill: document.getElementById("tab-drill"),
   tabReview: document.getElementById("tab-review"),
   tabLog: document.getElementById("tab-log"),
   viewRead: document.getElementById("view-read"),
+  viewDrill: document.getElementById("view-drill"),
   viewReview: document.getElementById("view-review"),
   viewLog: document.getElementById("view-log"),
   dueBadge: document.getElementById("due-badge"),
@@ -36,6 +38,18 @@ const els = {
   rvShow: document.getElementById("rv-show"),
   rvReveal: document.getElementById("rv-reveal"),
   rvSimilar: document.getElementById("rv-similar"),
+  // drill
+  drillSurah: document.getElementById("drill-surah"),
+  drillFrom: document.getElementById("drill-from"),
+  drillTo: document.getElementById("drill-to"),
+  drillEach: document.getElementById("drill-each"),
+  drillRangeRep: document.getElementById("drill-range-rep"),
+  drillStart: document.getElementById("drill-start"),
+  drillStop: document.getElementById("drill-stop"),
+  drillNow: document.getElementById("drill-now"),
+  drillStatus: document.querySelector("#drill-now .drill-status"),
+  drillArabic: document.getElementById("drill-arabic"),
+  drillTranslation: document.getElementById("drill-translation"),
   // shared
   status: document.getElementById("status"),
   player: document.getElementById("player"),
@@ -44,6 +58,7 @@ const els = {
 let playingBtn = null;
 let reviewQueue = []; // flattened list of due items for the chosen day
 let currentItem = null;
+let surahAyahCounts = {}; // surah number -> ayah count
 
 /* ---------- helpers ---------- */
 function setStatus(msg, isError = false) {
@@ -110,16 +125,20 @@ async function loadSimilar(surah, ayah, container) {
 /* ---------- tabs ---------- */
 function showTab(which) {
   els.viewRead.hidden = which !== "read";
+  els.viewDrill.hidden = which !== "drill";
   els.viewReview.hidden = which !== "review";
   els.viewLog.hidden = which !== "log";
   els.tabRead.classList.toggle("active", which === "read");
+  els.tabDrill.classList.toggle("active", which === "drill");
   els.tabReview.classList.toggle("active", which === "review");
   els.tabLog.classList.toggle("active", which === "log");
   stopAudio();
+  if (which !== "drill") stopDrill();
   if (which === "review") loadReview();
   if (which === "log") loadLog();
 }
 els.tabRead.addEventListener("click", () => showTab("read"));
+els.tabDrill.addEventListener("click", () => showTab("drill"));
 els.tabReview.addEventListener("click", () => showTab("review"));
 els.tabLog.addEventListener("click", () => showTab("log"));
 
@@ -130,7 +149,8 @@ async function loadSurahIndex() {
     const res = await fetch("/api/surahs");
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const surahs = await res.json();
-    els.select.innerHTML =
+    surahAyahCounts = Object.fromEntries(surahs.map((s) => [s.number, s.ayahCount]));
+    const opts =
       '<option value="">— pick a surah —</option>' +
       surahs
         .map(
@@ -139,6 +159,8 @@ async function loadSurahIndex() {
             `— ${s.name} (${s.ayahCount})</option>`
         )
         .join("");
+    els.select.innerHTML = opts;
+    els.drillSurah.innerHTML = opts;
     setStatus("");
   } catch (err) {
     setStatus(`Could not load surahs: ${err.message}`, true);
@@ -456,6 +478,140 @@ function exportCsv() {
 }
 els.logExport.addEventListener("click", exportCsv);
 
+/* ---------- drill (repeat trainer) ---------- */
+const CYCLE = [1, 5, 10, Infinity];
+const cycleLabel = (v) => (v === Infinity ? "∞" : String(v));
+
+const drill = {
+  active: false,
+  slice: [], // [{ayah, audio, arabic, translation}]
+  idx: 0, // position within slice
+  plays: 0, // completed plays of the current ayah
+  pass: 0, // completed passes over the range
+};
+
+function cycleValue(btn) {
+  return CYCLE[Number(btn.dataset.idx || 0)];
+}
+
+function setupCycle(btn) {
+  btn.dataset.idx = "0";
+  btn.addEventListener("click", () => {
+    const next = (Number(btn.dataset.idx) + 1) % CYCLE.length;
+    btn.dataset.idx = String(next);
+    btn.querySelector("b").textContent = cycleLabel(CYCLE[next]);
+  });
+}
+setupCycle(els.drillEach);
+setupCycle(els.drillRangeRep);
+
+function clampDrillRange() {
+  const count = surahAyahCounts[els.drillSurah.value] || 1;
+  els.drillFrom.max = count;
+  els.drillTo.max = count;
+  if (Number(els.drillTo.value) > count || Number(els.drillTo.value) < 1) {
+    els.drillTo.value = count;
+  }
+  if (Number(els.drillFrom.value) < 1) els.drillFrom.value = 1;
+}
+els.drillSurah.addEventListener("change", () => {
+  els.drillFrom.value = 1;
+  els.drillTo.value = surahAyahCounts[els.drillSurah.value] || 1;
+  clampDrillRange();
+});
+els.drillFrom.addEventListener("change", clampDrillRange);
+els.drillTo.addEventListener("change", clampDrillRange);
+
+async function startDrill() {
+  const number = els.drillSurah.value;
+  if (!number) {
+    setStatus("Pick a surah to drill.", true);
+    return;
+  }
+  clampDrillRange();
+  const from = Math.max(1, Number(els.drillFrom.value));
+  const to = Math.max(from, Number(els.drillTo.value));
+
+  setStatus("Loading audio…");
+  let surah;
+  try {
+    const res = await fetch(`/api/surah/${number}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    surah = await res.json();
+  } catch (err) {
+    setStatus(`Could not load surah: ${err.message}`, true);
+    return;
+  }
+  setStatus("");
+
+  drill.slice = surah.ayahs.slice(from - 1, to).map((a) => ({
+    ayah: a.numberInSurah,
+    audio: a.audio,
+    arabic: a.arabic,
+    translation: a.translation,
+  }));
+  if (!drill.slice.length) return;
+
+  drill.active = true;
+  drill.idx = 0;
+  drill.plays = 0;
+  drill.pass = 0;
+  els.drillStart.hidden = true;
+  els.drillStop.hidden = false;
+  els.drillNow.hidden = false;
+  playDrillCurrent();
+}
+
+function playDrillCurrent() {
+  const a = drill.slice[drill.idx];
+  const each = cycleValue(els.drillEach);
+  const range = cycleValue(els.drillRangeRep);
+  els.drillStatus.textContent =
+    `Ayah ${drill.idx + 1}/${drill.slice.length} · ${els.drillSurah.value}:${a.ayah}` +
+    ` · play ${drill.plays + 1}/${cycleLabel(each)}` +
+    ` · pass ${drill.pass + 1}/${cycleLabel(range)}`;
+  els.drillArabic.innerHTML = escapeHtml(a.arabic);
+  els.drillTranslation.textContent = a.translation;
+  els.player.src = a.audio;
+  els.player.play().catch((err) => setStatus(`Audio error: ${err.message}`, true));
+}
+
+function drillEnded() {
+  const each = cycleValue(els.drillEach);
+  const range = cycleValue(els.drillRangeRep);
+
+  drill.plays += 1;
+  if (drill.plays < each) {
+    playDrillCurrent(); // repeat the same ayah
+    return;
+  }
+  drill.plays = 0;
+  drill.idx += 1;
+  if (drill.idx < drill.slice.length) {
+    playDrillCurrent(); // next ayah in range
+    return;
+  }
+  // finished one pass over the range
+  drill.idx = 0;
+  drill.pass += 1;
+  if (drill.pass < range) {
+    playDrillCurrent(); // repeat the whole range
+    return;
+  }
+  stopDrill(); // done
+}
+
+function stopDrill() {
+  if (!drill.active) return;
+  drill.active = false;
+  els.player.pause();
+  els.drillStart.hidden = false;
+  els.drillStop.hidden = true;
+  els.drillStatus.textContent = "Done.";
+}
+els.drillStart.addEventListener("click", startDrill);
+els.drillStop.addEventListener("click", stopDrill);
+
 /* ---------- audio ---------- */
 function togglePlay(url, btn) {
   if (playingBtn === btn && !els.player.paused) {
@@ -478,7 +634,10 @@ function stopAudio() {
     playingBtn = null;
   }
 }
-els.player.addEventListener("ended", stopAudio);
+els.player.addEventListener("ended", () => {
+  if (drill.active) drillEnded();
+  else stopAudio();
+});
 
 /* ---------- init ---------- */
 els.select.addEventListener("change", (e) => loadSurah(e.target.value));

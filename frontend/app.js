@@ -52,6 +52,7 @@ const els = {
   drillArabic: document.getElementById("drill-arabic"),
   drillTranslation: document.getElementById("drill-translation"),
   // shared
+  langToggle: document.getElementById("lang-toggle"),
   status: document.getElementById("status"),
   player: document.getElementById("player"),
 };
@@ -60,6 +61,9 @@ let playingBtn = null;
 let reviewQueue = []; // flattened list of due items for the chosen day
 let currentItem = null;
 let surahAyahCounts = {}; // surah number -> ayah count
+let currentReadSurah = null; // last surah object loaded in the Read tab
+let currentReadNumber = null;
+let activeTab = "read";
 
 /* ---------- helpers ---------- */
 function setStatus(msg, isError = false) {
@@ -88,7 +92,7 @@ function renderTokens(tokens) {
 
 function renderContrast(d) {
   if (!d || !d.count) {
-    return '<p class="similar-none">No similar verses — low confusion risk.</p>';
+    return `<p class="similar-none">${i18n.t("similar_none")}</p>`;
   }
   const pairs = d.similar
     .map(
@@ -106,20 +110,22 @@ function renderContrast(d) {
       </div>`
     )
     .join("");
-  return (
-    `<p class="similar-head">⚠ ${d.count} similar verse${d.count > 1 ? "s" : ""} ` +
-    `— drill the <span class="diff">highlighted</span> differences:</p>${pairs}`
-  );
+  const head = i18n.t("similar_head", {
+    N: d.count,
+    HL: `<span class="diff">${i18n.t("similar_hl")}</span>`,
+  });
+  return `<p class="similar-head">${head}</p>${pairs}`;
 }
 
 async function loadSimilar(surah, ayah, container) {
-  container.innerHTML = '<p class="similar-none">Checking similar verses…</p>';
+  container.innerHTML = `<p class="similar-none">${i18n.t("similar_checking")}</p>`;
   try {
     const res = await fetch(`/api/similar/${surah}/${ayah}`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     container.innerHTML = renderContrast(await res.json());
   } catch (err) {
-    container.innerHTML = `<p class="similar-none">Similar check failed: ${err.message}</p>`;
+    container.innerHTML =
+      `<p class="similar-none">${i18n.t("similar_fail", { M: err.message })}</p>`;
   }
 }
 
@@ -134,6 +140,7 @@ function showTab(which) {
   els.tabReview.classList.toggle("active", which === "review");
   els.tabLog.classList.toggle("active", which === "log");
   stopAudio();
+  activeTab = which;
   if (which !== "drill") stopDrill();
   if (which === "review") loadReview();
   if (which === "log") loadLog();
@@ -145,14 +152,14 @@ els.tabLog.addEventListener("click", () => showTab("log"));
 
 /* ---------- read view ---------- */
 async function loadSurahIndex() {
-  setStatus("Loading surah list…");
+  setStatus(i18n.t("status_surahs"));
   try {
     const res = await fetch("/api/surahs");
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const surahs = await res.json();
     surahAyahCounts = Object.fromEntries(surahs.map((s) => [s.number, s.ayahCount]));
     const opts =
-      '<option value="">— pick a surah —</option>' +
+      `<option value="">${i18n.t("opt_pick")}</option>` +
       surahs
         .map(
           (s) =>
@@ -164,7 +171,7 @@ async function loadSurahIndex() {
     els.drillSurah.innerHTML = opts;
     setStatus("");
   } catch (err) {
-    setStatus(`Could not load surahs: ${err.message}`, true);
+    setStatus(i18n.t("err_surahs", { M: err.message }), true);
   }
 }
 
@@ -174,7 +181,7 @@ async function loadSurah(number) {
     return;
   }
   stopAudio();
-  setStatus("Loading surah…");
+  setStatus(i18n.t("status_surah"));
   try {
     const res = await fetch(`/api/surah/${number}`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -182,11 +189,13 @@ async function loadSurah(number) {
     renderSurah(number, surah);
     setStatus("");
   } catch (err) {
-    setStatus(`Could not load surah: ${err.message}`, true);
+    setStatus(i18n.t("err_surah", { M: err.message }), true);
   }
 }
 
 function renderSurah(number, surah) {
+  currentReadNumber = number;
+  currentReadSurah = surah;
   els.title.textContent = `${surah.englishName} — ${surah.name}`;
   els.meta.textContent =
     `${surah.englishNameTranslation} · ${surah.revelationType} · ` +
@@ -212,14 +221,14 @@ function renderSurah(number, surah) {
     const playBtn = document.createElement("button");
     playBtn.className = "play-btn";
     playBtn.type = "button";
-    playBtn.textContent = "▶ Listen";
+    playBtn.textContent = i18n.t("btn_listen");
     playBtn.disabled = !ayah.audio;
     playBtn.addEventListener("click", () => togglePlay(ayah.audio, playBtn));
 
     const memBtn = document.createElement("button");
     memBtn.className = "ghost-btn";
     memBtn.type = "button";
-    memBtn.textContent = "+ Memorize";
+    memBtn.textContent = i18n.t("btn_memorize");
     memBtn.addEventListener("click", () =>
       memorize(Number(number), ayah.numberInSurah, memBtn)
     );
@@ -227,7 +236,7 @@ function renderSurah(number, surah) {
     const simBtn = document.createElement("button");
     simBtn.className = "ghost-btn";
     simBtn.type = "button";
-    simBtn.textContent = "≈ Similar";
+    simBtn.textContent = i18n.t("btn_similar");
     const simPanel = document.createElement("div");
     simPanel.className = "similar-panel";
     simPanel.hidden = true;
@@ -254,11 +263,11 @@ async function memorize(surah, ayah, btn) {
       body: JSON.stringify({ surah, ayah }),
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    btn.textContent = "✓ Added";
+    btn.textContent = i18n.t("btn_added");
     btn.disabled = true;
     refreshDueBadge();
   } catch (err) {
-    setStatus(`Could not add: ${err.message}`, true);
+    setStatus(i18n.t("err_add", { M: err.message }), true);
   }
 }
 
@@ -285,7 +294,7 @@ async function loadProgress() {
     els.cManzil.textContent = p.manzil;
     els.cTotal.textContent = p.total;
   } catch (err) {
-    setStatus(`Could not load progress: ${err.message}`, true);
+    setStatus(i18n.t("err_progress", { M: err.message }), true);
   }
 }
 
@@ -293,13 +302,8 @@ function updateSleepHint() {
   // Research: encode before sleep, cold-recall after waking. Nudge by local hour.
   const h = new Date().getHours();
   let msg = "";
-  if (h >= 20 || h < 2) {
-    msg = "🌙 Night session — encode new material and your hardest reviews now; " +
-      "sleep consolidates verbatim sequences.";
-  } else if (h >= 4 && h < 11) {
-    msg = "🌅 Morning — cold recall. Hide the audio and test what you slept on " +
-      "before adding anything new.";
-  }
+  if (h >= 20 || h < 2) msg = i18n.t("sleep_night");
+  else if (h >= 4 && h < 11) msg = i18n.t("sleep_morning");
   els.sleepHint.textContent = msg;
   els.sleepHint.hidden = !msg;
 }
@@ -308,7 +312,7 @@ async function loadReview() {
   updateSleepHint();
   if (!els.asof.value) els.asof.value = todayISO();
   await loadProgress();
-  setStatus("Loading review queue…");
+  setStatus(i18n.t("status_review"));
   try {
     const res = await fetch(`/api/queue?as_of=${els.asof.value}`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -324,16 +328,9 @@ async function loadReview() {
     setStatus("");
     nextCard();
   } catch (err) {
-    setStatus(`Could not load review: ${err.message}`, true);
+    setStatus(i18n.t("err_review", { M: err.message }), true);
   }
 }
-
-const SCAFFOLD_NOTE = {
-  full: "Full scaffold — text shown, audio available.",
-  text: "Text only — audio withdrawn. Recall the sound from memory.",
-  first_word: "First word only — recite the rest from memory.",
-  hidden: "Blind recall — recite the whole ayah, then reveal to self-check.",
-};
 
 function maskArabic(arabic, scaffold, revealed) {
   if (revealed || scaffold === "full" || scaffold === "text") {
@@ -363,6 +360,10 @@ function renderArabic(revealed) {
 function nextCard() {
   stopAudio();
   currentItem = reviewQueue.shift() || null;
+  renderCard();
+}
+
+function renderCard() {
   if (!currentItem) {
     els.card.hidden = true;
     els.done.hidden = false;
@@ -377,7 +378,7 @@ function nextCard() {
     `${currentItem.surah}:${currentItem.ayah}`;
 
   const scaffold = currentItem.scaffold || "full";
-  els.rvScaffold.textContent = SCAFFOLD_NOTE[scaffold] || "";
+  els.rvScaffold.textContent = i18n.t(`scaffold_${scaffold}`);
   renderArabic(false);
 
   // audio is a scaffold too — only available at the "full" level
@@ -388,11 +389,11 @@ function nextCard() {
   const masked = scaffold === "first_word" || scaffold === "hidden";
   els.rvShow.hidden = !masked;
   els.rvShow.dataset.revealed = "0";
-  els.rvShow.textContent = "Reveal ayah (self-check)";
+  els.rvShow.textContent = i18n.t("reveal_ayah");
 
   els.rvTranslation.textContent = currentItem.translation || "";
   els.rvTranslation.classList.add("reveal-hidden");
-  els.rvReveal.textContent = "Reveal translation";
+  els.rvReveal.textContent = i18n.t("reveal_tr");
 
   els.rvSimilar.innerHTML = "";
   loadSimilar(currentItem.surah, currentItem.ayah, els.rvSimilar);
@@ -414,21 +415,21 @@ async function rate(rating) {
     await loadProgress();
     nextCard();
   } catch (err) {
-    setStatus(`Could not save rating: ${err.message}`, true);
+    setStatus(i18n.t("err_rating", { M: err.message }), true);
   }
 }
 
 els.rvReveal.addEventListener("click", () => {
   els.rvTranslation.classList.toggle("reveal-hidden");
   els.rvReveal.textContent = els.rvTranslation.classList.contains("reveal-hidden")
-    ? "Reveal translation"
-    : "Hide translation";
+    ? i18n.t("reveal_tr")
+    : i18n.t("hide_tr");
 });
 els.rvShow.addEventListener("click", () => {
   const revealed = els.rvShow.dataset.revealed === "1";
   renderArabic(!revealed);
   els.rvShow.dataset.revealed = revealed ? "0" : "1";
-  els.rvShow.textContent = revealed ? "Reveal ayah (self-check)" : "Hide ayah";
+  els.rvShow.textContent = revealed ? i18n.t("reveal_ayah") : i18n.t("hide_ayah");
 });
 els.rvListen.addEventListener("click", () => {
   if (currentItem && currentItem.audio) togglePlay(currentItem.audio, els.rvListen);
@@ -447,7 +448,7 @@ async function loadLog() {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     logRows = await res.json();
   } catch (err) {
-    setStatus(`Could not load log: ${err.message}`, true);
+    setStatus(i18n.t("err_log", { M: err.message }), true);
     return;
   }
   els.logBody.innerHTML = logRows
@@ -534,21 +535,21 @@ els.drillTo.addEventListener("change", clampDrillRange);
 async function startDrill() {
   const number = els.drillSurah.value;
   if (!number) {
-    setStatus("Pick a surah to drill.", true);
+    setStatus(i18n.t("drill_pick"), true);
     return;
   }
   clampDrillRange();
   const from = Math.max(1, Number(els.drillFrom.value));
   const to = Math.max(from, Number(els.drillTo.value));
 
-  setStatus("Loading audio…");
+  setStatus(i18n.t("status_audio"));
   let surah;
   try {
     const res = await fetch(`/api/surah/${number}`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     surah = await res.json();
   } catch (err) {
-    setStatus(`Could not load surah: ${err.message}`, true);
+    setStatus(i18n.t("err_surah", { M: err.message }), true);
     return;
   }
   setStatus("");
@@ -575,15 +576,21 @@ function playDrillCurrent() {
   const a = drill.slice[drill.idx];
   const each = valOf(els.drillEach);
   const range = valOf(els.drillRangeRep);
-  els.drillStatus.textContent =
-    `Ayah ${drill.idx + 1}/${drill.slice.length} · ${els.drillSurah.value}:${a.ayah}` +
-    ` · play ${drill.plays + 1}/${repLabel(each)}` +
-    ` · pass ${drill.pass + 1}/${repLabel(range)}`;
+  els.drillStatus.textContent = i18n.t("drill_status", {
+    i: drill.idx + 1,
+    n: drill.slice.length,
+    s: els.drillSurah.value,
+    a: a.ayah,
+    p: drill.plays + 1,
+    each: repLabel(each),
+    pass: drill.pass + 1,
+    range: repLabel(range),
+  });
   els.drillArabic.innerHTML = escapeHtml(a.arabic);
   els.drillTranslation.textContent = a.translation;
   els.player.src = a.audio;
   els.player.playbackRate = valOf(els.drillSpeed);
-  els.player.play().catch((err) => setStatus(`Audio error: ${err.message}`, true));
+  els.player.play().catch((err) => setStatus(i18n.t("err_audio", { M: err.message }), true));
 }
 
 function drillEnded() {
@@ -617,7 +624,7 @@ function stopDrill() {
   els.player.pause();
   els.drillStart.hidden = false;
   els.drillStop.hidden = true;
-  els.drillStatus.textContent = "Done.";
+  els.drillStatus.textContent = i18n.t("drill_done");
 }
 els.drillStart.addEventListener("click", startDrill);
 els.drillStop.addEventListener("click", stopDrill);
@@ -631,17 +638,17 @@ function togglePlay(url, btn) {
   stopAudio();
   els.player.src = url;
   els.player.playbackRate = 1; // drill speed must not leak into single playback
-  els.player.play().catch((err) => setStatus(`Audio error: ${err.message}`, true));
+  els.player.play().catch((err) => setStatus(i18n.t("err_audio", { M: err.message }), true));
   btn.classList.add("playing");
   btn.dataset.label = btn.textContent;
-  btn.textContent = "⏸ Playing";
+  btn.textContent = i18n.t("btn_playing");
   playingBtn = btn;
 }
 function stopAudio() {
   els.player.pause();
   if (playingBtn) {
     playingBtn.classList.remove("playing");
-    playingBtn.textContent = playingBtn.dataset.label || "▶ Listen";
+    playingBtn.textContent = playingBtn.dataset.label || i18n.t("btn_listen");
     playingBtn = null;
   }
 }
@@ -650,7 +657,31 @@ els.player.addEventListener("ended", () => {
   else stopAudio();
 });
 
+/* ---------- language ---------- */
+function syncLangButton() {
+  els.langToggle.textContent = i18n.t("lang_name");
+}
+els.langToggle.addEventListener("click", () => {
+  i18n.setLang(i18n.getLang() === "en" ? "az" : "en");
+});
+
+// Re-render dynamic (JS-generated) text when the language changes.
+window.addEventListener("langchange", () => {
+  syncLangButton();
+  // refresh the "— pick a surah —" placeholder option in both selects
+  if (els.select.options[0]) els.select.options[0].textContent = i18n.t("opt_pick");
+  if (els.drillSurah.options[0]) els.drillSurah.options[0].textContent = i18n.t("opt_pick");
+  if (currentReadSurah) renderSurah(currentReadNumber, currentReadSurah);
+  if (activeTab === "review") {
+    updateSleepHint();
+    renderCard();
+  }
+  if (activeTab === "log") loadLog();
+});
+
 /* ---------- init ---------- */
+i18n.applyStatic();
+syncLangButton();
 els.select.addEventListener("change", (e) => loadSurah(e.target.value));
 loadSurahIndex();
 refreshDueBadge();

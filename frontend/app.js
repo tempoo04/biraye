@@ -46,6 +46,7 @@ const els = {
   drillRangeRep: document.getElementById("drill-range-rep"),
   drillSpeed: document.getElementById("drill-speed"),
   drillStart: document.getElementById("drill-start"),
+  drillPause: document.getElementById("drill-pause"),
   drillStop: document.getElementById("drill-stop"),
   drillNow: document.getElementById("drill-now"),
   drillStatus: document.querySelector("#drill-now .drill-status"),
@@ -488,6 +489,7 @@ const speedLabel = (v) => `×${v}`;
 
 const drill = {
   active: false,
+  paused: false,
   slice: [], // [{ayah, audio, arabic, translation}]
   idx: 0, // position within slice
   plays: 0, // completed plays of the current ayah
@@ -563,13 +565,29 @@ async function startDrill() {
   if (!drill.slice.length) return;
 
   drill.active = true;
+  drill.paused = false;
   drill.idx = 0;
   drill.plays = 0;
   drill.pass = 0;
   els.drillStart.hidden = true;
+  els.drillPause.hidden = false;
+  els.drillPause.textContent = i18n.t("drill_pause");
   els.drillStop.hidden = false;
   els.drillNow.hidden = false;
   playDrillCurrent();
+}
+
+function togglePauseDrill() {
+  if (!drill.active) return;
+  if (drill.paused) {
+    drill.paused = false;
+    els.drillPause.textContent = i18n.t("drill_pause");
+    els.player.play().catch((err) => setStatus(i18n.t("err_audio", { M: err.message }), true));
+  } else {
+    drill.paused = true;
+    els.drillPause.textContent = i18n.t("drill_resume");
+    els.player.pause(); // keeps position; no "ended" fires, drill state preserved
+  }
 }
 
 function playDrillCurrent() {
@@ -621,12 +639,15 @@ function drillEnded() {
 function stopDrill() {
   if (!drill.active) return;
   drill.active = false;
+  drill.paused = false;
   els.player.pause();
   els.drillStart.hidden = false;
+  els.drillPause.hidden = true;
   els.drillStop.hidden = true;
   els.drillStatus.textContent = i18n.t("drill_done");
 }
 els.drillStart.addEventListener("click", startDrill);
+els.drillPause.addEventListener("click", togglePauseDrill);
 els.drillStop.addEventListener("click", stopDrill);
 
 /* ---------- audio ---------- */
@@ -677,6 +698,10 @@ window.addEventListener("langchange", () => {
     renderCard();
   }
   if (activeTab === "log") loadLog();
+  // pause button label reflects live drill state, not just the static default
+  if (drill.active) {
+    els.drillPause.textContent = i18n.t(drill.paused ? "drill_resume" : "drill_pause");
+  }
 });
 
 /* ---------- init ---------- */

@@ -48,6 +48,32 @@ def _write_cache(name: str, payload: dict | list) -> None:
     )
 
 
+def get_full_quran() -> list[dict]:
+    """Return the entire Quran text as a flat list of ayahs.
+
+    Shape: [{"surah": int, "ayah": int, "arabic": str}, ...] (6236 entries).
+    Fetched in a single request and cached; used to build the mutashabihat index.
+    """
+    cached = _read_cache("quran_full")
+    if cached is not None:
+        return cached  # type: ignore[return-value]
+
+    try:
+        resp = httpx.get(f"{API_BASE}/quran/{TEXT_EDITION}", timeout=httpx.Timeout(60.0))
+        resp.raise_for_status()
+        payload = resp.json()["data"]
+    except (httpx.HTTPError, KeyError, ValueError) as exc:
+        raise DataError(f"Could not fetch full Quran: {exc}") from exc
+
+    flat = [
+        {"surah": s["number"], "ayah": a["numberInSurah"], "arabic": a["text"]}
+        for s in payload["surahs"]
+        for a in s["ayahs"]
+    ]
+    _write_cache("quran_full", flat)
+    return flat
+
+
 def get_surah_index() -> list[dict]:
     """Return metadata for all 114 surahs (number, names, ayah count)."""
     cached = _read_cache("surah_index")

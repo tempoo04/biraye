@@ -16,8 +16,8 @@ Each milestone is a **runnable, testable increment**. You test before the next o
 | **M1** See + Listen | Pick a surah → Arabic + translation + play per-ayah audio | Open Al-Fātiḥa, read it, hear each ayah | ✅ done |
 | **M2** Three-tier scheduler | sabaq/sabqi/manzil queues, FSRS-lite review engine | Memorize Fātiḥa, see it scheduled, return next day | ✅ done |
 | **M3** Scaffold-withdrawal recall | Recall mode: audio fades (full → first-word → silent) + self-rate | Review an ayah with progressive hiding | ✅ done |
-| **M4** Mutashabihat engine | Similar-verse contrastive drilling + twin-surfacing | Two similar verses drilled side-by-side | ⬜ next |
-| **M5** PWA + teacher-log + polish | Install on phone, sleep-timed prompts, teacher logbook, meaning gloss | Add to home screen; teacher sees student log | ⬜ |
+| **M4** Mutashabihat engine | Similar-verse contrastive drilling + twin-surfacing | Two similar verses drilled side-by-side | ✅ done |
+| **M5** PWA + teacher-log + polish | Install on phone, sleep-timed prompts, teacher logbook, meaning gloss | Add to home screen; teacher sees student log | ⬜ next |
 
 ## Research foundation (why these features)
 

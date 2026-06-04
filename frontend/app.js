@@ -29,6 +29,7 @@ const els = {
   rvListen: document.getElementById("rv-listen"),
   rvShow: document.getElementById("rv-show"),
   rvReveal: document.getElementById("rv-reveal"),
+  rvSimilar: document.getElementById("rv-similar"),
   // shared
   status: document.getElementById("status"),
   player: document.getElementById("player"),
@@ -50,6 +51,54 @@ function escapeHtml(s) {
 }
 function todayISO() {
   return new Date().toISOString().slice(0, 10);
+}
+
+/* ---------- mutashabihat (similar verses) ---------- */
+function renderTokens(tokens) {
+  return tokens
+    .map((tk) =>
+      tk.same
+        ? escapeHtml(tk.t)
+        : `<span class="diff">${escapeHtml(tk.t)}</span>`
+    )
+    .join(" ");
+}
+
+function renderContrast(d) {
+  if (!d || !d.count) {
+    return '<p class="similar-none">No similar verses — low confusion risk.</p>';
+  }
+  const pairs = d.similar
+    .map(
+      (s) => `
+      <div class="pair">
+        <div class="pair-line">
+          <span class="pair-ref">${d.surah}:${d.ayah}</span>
+          <span class="ayah-arabic small">${renderTokens(s.baseTokens)}</span>
+        </div>
+        <div class="pair-line">
+          <span class="pair-ref">${s.surah}:${s.ayah}
+            <em>${Math.round(s.ratio * 100)}%</em></span>
+          <span class="ayah-arabic small">${renderTokens(s.tokens)}</span>
+        </div>
+      </div>`
+    )
+    .join("");
+  return (
+    `<p class="similar-head">⚠ ${d.count} similar verse${d.count > 1 ? "s" : ""} ` +
+    `— drill the <span class="diff">highlighted</span> differences:</p>${pairs}`
+  );
+}
+
+async function loadSimilar(surah, ayah, container) {
+  container.innerHTML = '<p class="similar-none">Checking similar verses…</p>';
+  try {
+    const res = await fetch(`/api/similar/${surah}/${ayah}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    container.innerHTML = renderContrast(await res.json());
+  } catch (err) {
+    container.innerHTML = `<p class="similar-none">Similar check failed: ${err.message}</p>`;
+  }
 }
 
 /* ---------- tabs ---------- */
@@ -143,8 +192,23 @@ function renderSurah(number, surah) {
       memorize(Number(number), ayah.numberInSurah, memBtn)
     );
 
-    actions.append(playBtn, memBtn);
-    li.append(arabic, trans, actions);
+    const simBtn = document.createElement("button");
+    simBtn.className = "ghost-btn";
+    simBtn.type = "button";
+    simBtn.textContent = "≈ Similar";
+    const simPanel = document.createElement("div");
+    simPanel.className = "similar-panel";
+    simPanel.hidden = true;
+    simBtn.addEventListener("click", () => {
+      if (simPanel.hidden && !simPanel.dataset.loaded) {
+        loadSimilar(Number(number), ayah.numberInSurah, simPanel);
+        simPanel.dataset.loaded = "1";
+      }
+      simPanel.hidden = !simPanel.hidden;
+    });
+
+    actions.append(playBtn, memBtn, simBtn);
+    li.append(arabic, trans, actions, simPanel);
     els.list.append(li);
   }
   els.reader.hidden = false;
@@ -281,6 +345,9 @@ function nextCard() {
   els.rvTranslation.textContent = currentItem.translation || "";
   els.rvTranslation.classList.add("reveal-hidden");
   els.rvReveal.textContent = "Reveal translation";
+
+  els.rvSimilar.innerHTML = "";
+  loadSimilar(currentItem.surah, currentItem.ayah, els.rvSimilar);
 }
 
 async function rate(rating) {

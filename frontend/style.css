@@ -205,3 +205,36 @@ select {
 .rate-easy { background: #2e7d6b; }
 .rate:hover { filter: brightness(1.08); }
 .done { text-align: center; }
+
+/* ---- mutashabihat contrast ---- */
+.similar-panel { margin-top: 0.9rem; }
+.similar-head {
+  font-size: 0.85rem;
+  color: #7a1f1f;
+  margin: 0 0 0.5rem;
+}
+.similar-none { font-size: 0.8rem; color: var(--muted); margin: 0.5rem 0 0; }
+.pair {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.5rem 0.7rem;
+  margin-bottom: 0.5rem;
+  background: #fcfbf7;
+}
+.pair-line { display: flex; gap: 0.6rem; align-items: baseline; padding: 0.25rem 0; }
+.pair-ref {
+  flex: 0 0 auto;
+  font-size: 0.72rem;
+  color: var(--muted);
+  direction: ltr;
+  min-width: 3.2rem;
+}
+.pair-ref em { color: var(--green-light); font-style: normal; font-weight: 600; }
+.ayah-arabic.small { font-size: 1.25rem; line-height: 1.9; flex: 1; }
+.diff {
+  background: #ffe08a;
+  color: #6b3b00;
+  border-radius: 4px;
+  padding: 0 0.15em;
+  font-weight: 700;
+}

@@ -15,7 +15,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from . import __version__, data, db, memory, scheduler
+from . import __version__, data, db, memory, mutashabihat, scheduler
 from .scheduler import RATINGS
 
 FRONTEND_DIR = Path(__file__).resolve().parents[2] / "frontend"
@@ -106,6 +106,15 @@ def queue(as_of: str | None = Query(default=None)) -> dict:
 @app.get("/api/progress")
 def progress() -> dict:
     return memory.get_progress()
+
+
+@app.get("/api/similar/{surah}/{ayah}")
+def similar(surah: int, ayah: int) -> dict:
+    """Mutashabihat: verses similar to this one, with contrastive token diffs."""
+    try:
+        return mutashabihat.get_similar(surah, ayah)
+    except data.DataError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
 
 
 # Serve the frontend. index.html at "/", assets under their own paths.

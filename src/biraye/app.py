@@ -28,6 +28,20 @@ def _startup() -> None:
     db.init_db()
 
 
+@app.middleware("http")
+async def no_store_app_shell(request, call_next):
+    """Force the browser to revalidate HTML/JS/CSS every load.
+
+    The frontend changes often during development; without this a browser (or
+    proxy) can serve a stale app shell. API/audio are unaffected.
+    """
+    response = await call_next(request)
+    path = request.url.path
+    if path == "/" or path == "/sw.js" or path.startswith("/static"):
+        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    return response
+
+
 class AyahRef(BaseModel):
     surah: int = Field(ge=1, le=114)
     ayah: int = Field(ge=1)

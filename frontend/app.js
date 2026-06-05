@@ -799,8 +799,16 @@ els.select.addEventListener("change", (e) => loadSurah(e.target.value));
 loadSurahIndex();
 refreshDueBadge();
 
-// PWA: register the service worker for installability + offline use
+// PWA: register the service worker for installability + offline use.
+// When a new worker takes control, reload once so the freshest UI/code is shown
+// (avoids stale-cache mismatches between HTML and JS after an update).
 if ("serviceWorker" in navigator) {
+  let reloading = false;
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    if (reloading) return;
+    reloading = true;
+    window.location.reload();
+  });
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("/sw.js").catch(() => {
       /* offline support unavailable — app still works online */

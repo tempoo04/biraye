@@ -4,12 +4,17 @@ const els = {
   // tabs / views
   tabRead: document.getElementById("tab-read"),
   tabDrill: document.getElementById("tab-drill"),
+  tabSimilar: document.getElementById("tab-similar"),
   tabReview: document.getElementById("tab-review"),
   tabLog: document.getElementById("tab-log"),
   viewRead: document.getElementById("view-read"),
   viewDrill: document.getElementById("view-drill"),
+  viewSimilar: document.getElementById("view-similar"),
   viewReview: document.getElementById("view-review"),
   viewLog: document.getElementById("view-log"),
+  simFilter: document.getElementById("sim-filter"),
+  simCount: document.getElementById("sim-count"),
+  simList: document.getElementById("sim-list"),
   dueBadge: document.getElementById("due-badge"),
   sleepHint: document.getElementById("sleep-hint"),
   logBody: document.querySelector("#log-table tbody"),
@@ -134,20 +139,24 @@ async function loadSimilar(surah, ayah, container) {
 function showTab(which) {
   els.viewRead.hidden = which !== "read";
   els.viewDrill.hidden = which !== "drill";
+  els.viewSimilar.hidden = which !== "similar";
   els.viewReview.hidden = which !== "review";
   els.viewLog.hidden = which !== "log";
   els.tabRead.classList.toggle("active", which === "read");
   els.tabDrill.classList.toggle("active", which === "drill");
+  els.tabSimilar.classList.toggle("active", which === "similar");
   els.tabReview.classList.toggle("active", which === "review");
   els.tabLog.classList.toggle("active", which === "log");
   stopAudio();
   activeTab = which;
   if (which !== "drill") stopDrill();
+  if (which === "similar") loadMutashabihat();
   if (which === "review") loadReview();
   if (which === "log") loadLog();
 }
 els.tabRead.addEventListener("click", () => showTab("read"));
 els.tabDrill.addEventListener("click", () => showTab("drill"));
+els.tabSimilar.addEventListener("click", () => showTab("similar"));
 els.tabReview.addEventListener("click", () => showTab("review"));
 els.tabLog.addEventListener("click", () => showTab("log"));
 
@@ -170,6 +179,11 @@ async function loadSurahIndex() {
         .join("");
     els.select.innerHTML = opts;
     els.drillSurah.innerHTML = opts;
+    els.simFilter.innerHTML =
+      `<option value="">${i18n.t("sim_all")}</option>` +
+      surahs
+        .map((s) => `<option value="${s.number}">${s.number}. ${s.englishName}</option>`)
+        .join("");
     setStatus("");
   } catch (err) {
     setStatus(i18n.t("err_surahs", { M: err.message }), true);
@@ -650,6 +664,78 @@ els.drillStart.addEventListener("click", startDrill);
 els.drillPause.addEventListener("click", togglePauseDrill);
 els.drillStop.addEventListener("click", stopDrill);
 
+/* ---------- mutashabihat browser ---------- */
+let allPairs = null;
+
+async function loadMutashabihat() {
+  if (allPairs) {
+    renderPairs();
+    return;
+  }
+  els.simList.innerHTML = `<p class="similar-none">${i18n.t("similar_checking")}</p>`;
+  try {
+    const res = await fetch("/api/mutashabihat");
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    allPairs = await res.json();
+  } catch (err) {
+    els.simList.innerHTML = `<p class="similar-none">${i18n.t("similar_fail", { M: err.message })}</p>`;
+    return;
+  }
+  renderPairs();
+}
+
+function renderPairs() {
+  if (!allPairs) return;
+  const f = els.simFilter.value;
+  const pairs = f
+    ? allPairs.filter((p) => String(p.a.surah) === f || String(p.b.surah) === f)
+    : allPairs;
+  els.simCount.textContent = i18n.t("sim_count", { N: pairs.length });
+  els.simList.innerHTML = pairs
+    .map(
+      (p, i) => `
+      <div class="sim-row" data-i="${i}">
+        <button class="sim-head" type="button">
+          <span class="sim-ref">${p.a.surah}:${p.a.ayah} ↔ ${p.b.surah}:${p.b.ayah}</span>
+          <em>${Math.round(p.ratio * 100)}%</em>
+        </button>
+        <div class="similar-panel" hidden></div>
+      </div>`
+    )
+    .join("");
+  // bind expanders (use the filtered list for lookups)
+  els.simList.querySelectorAll(".sim-row").forEach((row) => {
+    const p = pairs[Number(row.dataset.i)];
+    const panel = row.querySelector(".similar-panel");
+    row.querySelector(".sim-head").addEventListener("click", () => {
+      if (panel.hidden && !panel.dataset.loaded) {
+        loadPairContrast(p, panel);
+        panel.dataset.loaded = "1";
+      }
+      panel.hidden = !panel.hidden;
+    });
+  });
+}
+
+async function loadPairContrast(pair, container) {
+  container.innerHTML = `<p class="similar-none">${i18n.t("similar_checking")}</p>`;
+  try {
+    const res = await fetch(`/api/similar/${pair.a.surah}/${pair.a.ayah}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const d = await res.json();
+    // keep only the twin for this pair, so the row shows just the relevant contrast
+    const twin = d.similar.find(
+      (s) => s.surah === pair.b.surah && s.ayah === pair.b.ayah
+    );
+    container.innerHTML = renderContrast(
+      twin ? { ...d, similar: [twin], count: 1 } : d
+    );
+  } catch (err) {
+    container.innerHTML = `<p class="similar-none">${i18n.t("similar_fail", { M: err.message })}</p>`;
+  }
+}
+els.simFilter.addEventListener("change", renderPairs);
+
 /* ---------- audio ---------- */
 function togglePlay(url, btn) {
   if (playingBtn === btn && !els.player.paused) {
@@ -692,7 +778,9 @@ window.addEventListener("langchange", () => {
   // refresh the "— pick a surah —" placeholder option in both selects
   if (els.select.options[0]) els.select.options[0].textContent = i18n.t("opt_pick");
   if (els.drillSurah.options[0]) els.drillSurah.options[0].textContent = i18n.t("opt_pick");
+  if (els.simFilter.options[0]) els.simFilter.options[0].textContent = i18n.t("sim_all");
   if (currentReadSurah) renderSurah(currentReadNumber, currentReadSurah);
+  if (activeTab === "similar" && allPairs) renderPairs();
   if (activeTab === "review") {
     updateSleepHint();
     renderCard();

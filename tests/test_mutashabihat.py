@@ -24,3 +24,18 @@ def test_diff_flags_only_changed_words():
 def test_identical_text_all_same():
     diff = m._diff_tokens("رب العالمين", "رب العالمين")
     assert all(t["same"] for t in diff)
+
+
+def test_list_pairs_dedupes_and_orders(monkeypatch):
+    # tiny fake graph: a<->b symmetric, plus b<->c
+    fake = {
+        "2:48": [{"surah": 2, "ayah": 123, "ratio": 0.81}],
+        "2:123": [{"surah": 2, "ayah": 48, "ratio": 0.81}],
+        "2:62": [{"surah": 5, "ayah": 69, "ratio": 0.82}],
+    }
+    monkeypatch.setattr(m, "build_index", lambda: fake)
+    pairs = m.list_pairs()
+    keys = {(p["a"]["surah"], p["a"]["ayah"], p["b"]["surah"], p["b"]["ayah"]) for p in pairs}
+    assert (2, 48, 2, 123) in keys  # 2:48<->2:123 appears once, canonical order
+    assert (2, 62, 5, 69) in keys
+    assert len(pairs) == 2  # the symmetric duplicate was collapsed

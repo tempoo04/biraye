@@ -31,6 +31,7 @@
     <nav class="tabs">
       <button id="tab-read" class="tab active" type="button" data-i18n="tab_read">Read</button>
       <button id="tab-drill" class="tab" type="button" data-i18n="tab_drill">Drill</button>
+      <button id="tab-similar" class="tab" type="button" data-i18n="tab_similar">Similar</button>
       <button id="tab-review" class="tab" type="button">
         <span data-i18n="tab_review">Review</span> <span id="due-badge" class="badge" hidden>0</span>
       </button>
@@ -99,6 +100,18 @@
           <div class="ayah-arabic" id="drill-arabic"></div>
           <p class="ayah-translation" id="drill-translation"></p>
         </div>
+      </section>
+    </div>
+
+    <!-- SIMILAR-VERSES BROWSER -->
+    <div id="view-similar" hidden>
+      <section class="panel">
+        <h2 data-i18n="tab_similar">Similar</h2>
+        <p class="meta" data-i18n="sim_intro">Browse verse pairs that are easy to mix up. Tap one to see the difference.</p>
+        <label for="sim-filter" data-i18n="read_surah_label">Surah</label>
+        <select id="sim-filter" aria-label="Filter pairs by surah"></select>
+        <p id="sim-count" class="meta"></p>
+        <div id="sim-list" class="sim-list"></div>
       </section>
     </div>
 

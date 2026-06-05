@@ -8,7 +8,7 @@
  */
 "use strict";
 
-const VERSION = "biraye-v5";
+const VERSION = "biraye-v6";
 const SHELL = [
   "/",
   "/static/app.js",

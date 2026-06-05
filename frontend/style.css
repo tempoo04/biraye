@@ -127,7 +127,7 @@ select {
 .status.error { color: #b3261e; }
 
 /* ---- tabs ---- */
-.tabs { display: flex; justify-content: center; gap: 0.5rem; margin-top: 0.9rem; }
+.tabs { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; margin-top: 0.9rem; }
 .tab {
   background: transparent;
   color: #fff;
@@ -272,6 +272,27 @@ select {
   color: var(--green);
   margin: 0 0 1rem;
 }
+
+/* ---- mutashabihat browser ---- */
+#sim-filter { margin-bottom: 0.6rem; }
+.sim-list { margin-top: 0.4rem; }
+.sim-row { border-bottom: 1px solid var(--line); }
+.sim-head {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: none;
+  border: none;
+  padding: 0.7rem 0.2rem;
+  font-size: 0.95rem;
+  color: var(--text);
+  cursor: pointer;
+}
+.sim-head:hover { color: var(--green); }
+.sim-ref { font-weight: 600; direction: ltr; }
+.sim-head em { color: var(--green-light); font-style: normal; font-size: 0.8rem; }
+.sim-row .similar-panel { padding: 0 0.2rem 0.8rem; }
 
 /* ---- drill (repeat trainer) ---- */
 .drill-range { display: flex; gap: 0.8rem; margin-top: 0.8rem; }

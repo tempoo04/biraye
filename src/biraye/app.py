@@ -123,6 +123,15 @@ def similar(surah: int, ayah: int) -> dict:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
 
 
+@app.get("/api/mutashabihat")
+def mutashabihat_pairs() -> list[dict]:
+    """All unique similar-verse pairs (for the browser tab)."""
+    try:
+        return mutashabihat.list_pairs()
+    except data.DataError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
 # Serve the frontend. index.html at "/", assets under their own paths.
 @app.get("/")
 def index() -> FileResponse:

@@ -12,8 +12,12 @@ const I18N_DICT = {
 
     tab_read: "Read",
     tab_drill: "Drill",
+    tab_similar: "Similar",
     tab_review: "Review",
     tab_log: "Log",
+    sim_intro: "Browse verse pairs that are easy to mix up. Tap one to see the difference.",
+    sim_count: "%N% similar-verse pairs",
+    sim_all: "All surahs",
 
     read_surah_label: "Surah",
     opt_pick: "— pick a surah —",
@@ -96,8 +100,12 @@ const I18N_DICT = {
 
     tab_read: "Oxu",
     tab_drill: "Məşq",
+    tab_similar: "Bənzərlər",
     tab_review: "Təkrar",
     tab_log: "Jurnal",
+    sim_intro: "Bir-birinə qarışdırıla bilən ayə cütlərinə bax. Fərqi görmək üçün birinə toxun.",
+    sim_count: "%N% bənzər ayə cütü",
+    sim_all: "Bütün surələr",
 
     read_surah_label: "Surə",
     opt_pick: "— surə seçin —",

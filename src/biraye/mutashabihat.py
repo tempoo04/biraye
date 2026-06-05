@@ -126,6 +126,33 @@ def _diff_tokens(a_arabic: str, b_arabic: str) -> list[dict]:
     return out
 
 
+def list_pairs() -> list[dict]:
+    """All unique similar-verse pairs for the browser view.
+
+    Returns [{"a": {surah, ayah}, "b": {surah, ayah}, "ratio": float}, ...],
+    de-duplicated (each pair once) and ordered by reference.
+    """
+    index = build_index()
+    seen: set[tuple] = set()
+    pairs: list[dict] = []
+    for key, neighbours in index.items():
+        s, a = (int(x) for x in key.split(":"))
+        for n in neighbours:
+            lo, hi = sorted([(s, a), (n["surah"], n["ayah"])])
+            if (lo, hi) in seen:
+                continue
+            seen.add((lo, hi))
+            pairs.append(
+                {
+                    "a": {"surah": lo[0], "ayah": lo[1]},
+                    "b": {"surah": hi[0], "ayah": hi[1]},
+                    "ratio": n["ratio"],
+                }
+            )
+    pairs.sort(key=lambda p: (p["a"]["surah"], p["a"]["ayah"], p["b"]["surah"], p["b"]["ayah"]))
+    return pairs
+
+
 def get_similar(surah: int, ayah: int) -> dict:
     """Return an ayah's similar verses with token-level contrastive diffs."""
     index = build_index()

@@ -1,8 +1,23 @@
-# BirAye <span dir="rtl">بِر آية</span>
+<p align="center">
+  <img src="frontend/brand-hero.jpg" alt="BirAye" width="640" />
+</p>
 
-> **bir âyet — "one verse."** A verbatim-memory engine for Quran Hifz, not a Quran reader.
->
-> *Doesn't help you read Quran. Stops you forgetting it — by attacking the exact ways huffaz actually fail.*
+<h1 align="center">BirAye &nbsp;<span dir="rtl">بِر آية</span></h1>
+
+<p align="center"><em>bir âyet — “one verse.”  An evidence-based verbatim-memory engine for Quran Hifz — not a Quran reader.</em></p>
+
+<p align="center"><strong>Doesn't help you read Quran. Stops you forgetting it — by attacking the exact ways huffaz actually fail.</strong></p>
+
+<p align="center">
+  <a href="https://github.com/tempoo04/biraye/actions/workflows/ci.yml"><img src="https://github.com/tempoo04/biraye/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
+  <a href="https://github.com/tempoo04/biraye/actions/workflows/codeql.yml"><img src="https://github.com/tempoo04/biraye/actions/workflows/codeql.yml/badge.svg" alt="CodeQL" /></a>
+  <img src="https://img.shields.io/badge/python-3.12-blue.svg" alt="Python 3.12" />
+  <img src="https://img.shields.io/badge/FastAPI-009688.svg?logo=fastapi&logoColor=white" alt="FastAPI" />
+  <img src="https://img.shields.io/badge/PWA-installable-5a0fc8.svg" alt="PWA" />
+  <img src="https://img.shields.io/badge/status-alpha-orange.svg" alt="alpha" />
+</p>
+
+---
 
 BirAye is an evidence-based Quran memorization app. Where most apps are audio players
 with a full mushaf, BirAye is built around the cognitive science of **verbatim sequence
@@ -42,7 +57,8 @@ Open <http://127.0.0.1:8000>.
 
 ## Using BirAye
 
-The app has four tabs: **Read**, **Drill**, **Review**, **Log**.
+The app has five tabs: **Read**, **Drill**, **Similar**, **Review**, **Log**.
+Switch language (English / Azerbaijani) from the toggle in the top-right corner.
 
 ### Read — browse and start memorizing
 1. Pick a surah from the dropdown.
@@ -63,7 +79,13 @@ Loop a range of verses to drum them in.
    - **Speed** — playback tempo (`×0.5 → ×1 → ×1.5 → ×2`); can be changed live
      while a drill is playing.
 3. Press **▶ Start drill**. A status line shows the current ayah, which repeat,
-   and which pass you're on. **⏹ Stop** ends it.
+   and which pass you're on. **⏸ Pause** holds your place; **⏹ Stop** resets.
+
+### Similar — the mutashabihat browser
+Browse every pair of verses that are easy to confuse (computed automatically —
+~1,400 pairs). Filter by surah, then tap any pair to expand the two verses
+side by side with the **differing words highlighted**. This is the feature no
+other app has — see [How the mutashabihat engine works](#how-the-mutashabihat-engine-works).
 
 > Example: Baqarah 7→20, Each ayah ×5, Whole range ×∞, Speed ×1 — plays each verse
 > five times, walks the whole range, then loops the range forever.
@@ -104,11 +126,36 @@ plain `http://` over a local network won't enable it.)
 | `GET`  | `/api/queue?as_of=YYYY-MM-DD` | due ayahs by tier |
 | `GET`  | `/api/progress` | counts per tier |
 | `GET`  | `/api/similar/{s}/{a}` | similar verses with contrastive diffs |
+| `GET`  | `/api/mutashabihat` | all unique similar-verse pairs |
 | `GET`  | `/api/log` | full logbook of tracked ayahs |
+
+## How the mutashabihat engine works
+
+*Mutashabihat* (المتشابهات) are mutually-similar verses — near-identical wording that
+differs by a word, particle, or order. They are the **#1 cause of Hifz errors**: the
+memory pattern-matches the shared part and "jumps the track" onto the wrong verse.
+Traditional teachers drill these pairs side by side; no mainstream app does.
+
+BirAye builds the similar-verse graph **algorithmically from the Quran text** — no
+curated dataset:
+
+1. **Normalize** each ayah — strip diacritics/tatweel and fold letter variants
+   (`أ إ آ ٱ → ا`, `ة → ه`, …) so comparison is on essence, not spelling.
+2. **Candidate gate** — index every shared 4-word phrase; two verses are candidates
+   only if they share one. (Cheap; throws away unrelated pairs.)
+3. **Score** candidates by token-sequence similarity; keep pairs ≥ 55% alike.
+4. **Diff** each pair both ways and flag the differing words for highlighting.
+
+The graph (~1,400 pairs over 6,236 ayahs) is computed once and cached. The **Similar**
+tab lets you browse it; in **Review**, twins surface automatically beside a due ayah.
 
 ## Status
 
 Built milestone-by-milestone — see [ROADMAP.md](ROADMAP.md). Done: M0–M6
 (skeleton, read+listen, three-tier scheduler, scaffold-withdrawal recall,
-mutashabihat engine, PWA + teacher logbook, repeat trainer), plus CI / CodeQL /
-Dependabot / pre-commit and a test suite.
+mutashabihat engine, PWA + teacher logbook, repeat trainer), the similar-verse
+browser, and English/Azerbaijani localization — plus CI / CodeQL / Dependabot /
+pre-commit and a test suite.
+
+> ⚠️ **Alpha.** In testing with early users. Data is per-device for now; accounts,
+> cloud sync, and a persistent database are planned.

@@ -18,9 +18,10 @@ Each milestone is a **runnable, testable increment**. You test before the next o
 | **M3** Scaffold-withdrawal recall | Recall mode: audio fades (full → first-word → silent) + self-rate | Review an ayah with progressive hiding | ✅ done |
 | **M4** Mutashabihat engine | Similar-verse contrastive drilling + twin-surfacing | Two similar verses drilled side-by-side | ✅ done |
 | **M5** PWA + teacher-log + polish | Installable PWA, offline shell, sleep-timed hint, teacher logbook + CSV export | Add to home screen; export the log | ✅ done |
-| **M6** Repeat trainer (Drill) | Range player: surah + from/to ayah, per-ayah & whole-range repeat ×(1/2/3/4/5/10/∞), playback speed ×(0.5/1/1.5/2) | Drill Baqarah 7→20, each ayah ×5, range ×∞, speed ×1.5 | ✅ done |
+| **M6** Repeat trainer (Drill) | Range player: surah + from/to ayah, per-ayah & whole-range repeat ×(1/2/3/4/5/10/∞), playback speed ×(0.5/1/1.5/2), pause/resume | Drill Baqarah 7→20, each ayah ×5, range ×∞, speed ×1.5 | ✅ done |
+| **M7** Similar browser + i18n + brand | Browse all ~1,400 mutashabihat pairs (filter by surah), EN/AZ language toggle, crescent logo/icons | Open Similar tab, filter Baqarah, expand a pair; switch to AZ | ✅ done |
 
-*Deferred (optional future):* per-word meaning gloss for non-Arabic speakers (needs word-by-word translation data); speech-recognition mistake detection.
+*Deferred (optional future):* per-word meaning gloss for non-Arabic speakers (needs word-by-word translation data); speech-recognition mistake detection; accounts + persistent DB.
 
 ## Research foundation (why these features)
 

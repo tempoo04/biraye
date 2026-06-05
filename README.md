@@ -4,7 +4,7 @@
 
 <h1 align="center">BirAye &nbsp;<span dir="rtl">بِر آية</span></h1>
 
-<p align="center"><em>bir âyet — “one verse.”  An evidence-based verbatim-memory engine for Quran Hifz — not a Quran reader.</em></p>
+<p align="center"><em>bir ayet — “one verse.”  An evidence-based verbatim-memory engine for Quran Hifz — not a Quran reader.</em></p>
 
 <p align="center"><strong>Doesn't help you read Quran. Stops you forgetting it — by attacking the exact ways huffaz actually fail.</strong></p>
 

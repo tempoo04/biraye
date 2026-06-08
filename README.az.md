@@ -38,15 +38,15 @@ götürülməsi və oxşar ayələrin fərqləndirilməsi.
   bu, hifz səhvlərinin №1 səbəbidir və hər mövcud tətbiqdə boşluqdur.
 - **Müəllimin jurnalı, əvəzi deyil** — insan müəllim dəqiqlik nəzarətçisi olaraq qalır;
   tətbiq planlayır, izləyir və jurnalı ixrac edir.
-- **Təkrar məşqçisi** — istənilən ayə diapazonunu hər-ayə və bütöv-diapazon üçün
+- **Təkrar məşqi** — istənilən ayə diapazonunu hər-ayə və bütöv-diapazon üçün
   tənzimlənən təkrar sayı və dəyişdirilə bilən səslənmə sürəti ilə döngüyə salır.
 
-## Texnologiya
+## Tech
 
 - **Backend:** Python / FastAPI + SQLite
 - **Frontend:** uyğunlaşan veb (brauzer + quraşdırıla bilən PWA, telefona uyğun)
 - **Data:** açıq API-lər — [alquran.cloud](https://alquran.cloud) Üsmani mətni,
-  Muhəmməd Əsəd tərcüməsi və Mişari Əlafasi ayə-ayə audiosu üçün — yerli olaraq keşlənir.
+  Muhəmməd Əsəd tərcüməsi və Mişari Əlafasi ayə-ayə audiosu üçün — local olaraq keşlənir.
 
 ## İşə salmaq
 
@@ -86,7 +86,7 @@ Ayələri beyinə yeritmək üçün bir diapazonu döngüyə sal.
 
 ### Bənzərlər — mutaşabihat brauzeri
 Asanlıqla qarışdırılan hər ayə cütünü gözdən keçir (avtomatik hesablanır —
-~1,400 cüt). Surəyə görə süz, sonra istənilən cütə toxun ki, iki ayə
+~1,400 cüt). Surəyə görə filterlə, sonra istənilən uygunlaşdırmaya toxun ki, iki ayə
 **fərqli sözlər işıqlandırılmış** halda yan-yana açılsın. Bu, heç bir başqa
 tətbiqdə olmayan funksiyadır — bax [Mutaşabihat mühərriki necə işləyir](#mutaşabihat-mühərriki-necə-işləyir).
 
@@ -149,8 +149,7 @@ hazır data yoxdur:
 4. **Fərqləndir** hər cütü hər iki istiqamətdə və işıqlandırma üçün fərqli sözləri qeyd et.
 
 Qraf (6,236 ayə üzərində ~1,400 cüt) bir dəfə hesablanır və keşlənir. **Bənzərlər**
-tabı onu gözdən keçirməyə imkan verir; **Təkrar**-da əkizlər vaxtı çatan ayənin
-yanında avtomatik üzə çıxır.
+tabı onu gözdən keçirməyə imkan verir; **Təkrar**-da qoşa ayələr vaxtı çatan kimi avtomatik üzə çıxır.
 
 ## Status
 
@@ -161,4 +160,4 @@ brauzeri və İngilis/Azərbaycan lokalizasiyası — üstəlik CI / CodeQL / De
 pre-commit və test dəsti.
 
 > ⚠️ **Alfa.** Erkən istifadəçilərlə sınaqdadır. Data hələlik cihaza görədir; hesablar,
-> bulud sinxronizasiyası və davamlı verilənlər bazası planlaşdırılır.
+> cloud sinxronizasiyası və davamlı verilənlər bazası planlaşdırılır.

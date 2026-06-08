@@ -31,7 +31,7 @@ götürülməsi və oxşar ayələrin fərqləndirilməsi.
 - **Üç-pilləli aralıqlı təkrar** — klassik *səbəq / səbqi / mənzil* dövrünü əks etdirir,
   sözbəsöz xatırlama üçün tənzimlənmiş SM-2 / FSRS-lite planlayıcısı ilə idarə olunur —
   fləşkart faktları üçün deyil.
-- **Dayaq götürülməsi** — yaddaş gücləndikcə audio və mətn dəstəyi sönür
+- **Dayaq götürülməsi(dəstək mexanizmlərinin mərhələli şəkildə dayandırılması)** — yaddaş gücləndikcə audio və mətn dəstəyi sönür
   (`tam → mətn → ilk söz → kor xatırlama`), çünki araşdırmalar audionun *kodlaşdırmaya*
   kömək etdiyini, lakin *təkrar* zamanı xatırlama çətinliyini azaltdığını göstərir.
 - **Mutaşabihat mühərriki** — qarşılıqlı oxşar ayələrin avtomatik müqayisəli məşqi;

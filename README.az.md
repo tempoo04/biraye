@@ -159,14 +159,14 @@ bunları hər birinin necə tətbiq olunduğuna dair qısa qeydlə göstərir.)
 
 1. **Nawaz, N. & Jahangir, S. F. (2015).** *Effects of memorizing Quran by heart (Hifz)
    on later academic achievement.* Journal of Islamic Studies and Culture, 3(1), 58–64.
-   — Hifzi tamamlayan uşaqlar sonradan daha güclü akademik nailiyyət göstərdi; intizamlı
+   — Hifzi tamamlayan uşaqlar sonradan daha güclü akademik nailiyyət göstərir; intizamlı
    sözbəsöz əzbərləmə yaddaşı, diqqəti və səbri inkişaf etdirir. **BirAye** Hifzi ciddi
-   sözbəsöz təlim kimi qəbul edir və ona saxlama mühərriki verir.
-2. **Birnbaum, M. S., Kornell, N., Bjork, E. L. & Bjork, R. A. (2013).** *Why interleaving
+   sözbəsöz təlim kimi qəbul edir və ona yadda saxlama mühərriki verir.
+3. **Birnbaum, M. S., Kornell, N., Bjork, E. L. & Bjork, R. A. (2013).** *Why interleaving
    enhances inductive learning: The roles of discrimination and retrieval.* Memory &
    Cognition, 41(3), 392–402. — oxşar elementləri qarışıq öyrənmək beyni qarışdırıla bilən
-   şeylər arasında fərqləndirməyə məcbur edir. Bu, **Bənzərlər (mutaşabihat)** bölməsidir:
-   az qala eyni ayələr fərqlər vurğulanmış halda yan-yana məşq edilir.
+   şeylər arasında fərqləndirməyə yönləndirir. Bu, **Bənzərlər (mutaşabihat)** bölməsidir:
+   demək olar ki, eyni ayələr fərqlər vurğulanmış halda yan-yana məşq edilir.
 
 ## Status
 

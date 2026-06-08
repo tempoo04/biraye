@@ -8,6 +8,8 @@
 
 <p align="center"><strong>Doesn't help you read Quran. Stops you forgetting it — by attacking the exact ways huffaz actually fail.</strong></p>
 
+<p align="center"><strong>English</strong> · <a href="README.az.md">Azərbaycanca</a></p>
+
 <p align="center">
   <a href="https://github.com/tempoo04/biraye/actions/workflows/ci.yml"><img src="https://github.com/tempoo04/biraye/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
   <a href="https://github.com/tempoo04/biraye/actions/workflows/codeql.yml"><img src="https://github.com/tempoo04/biraye/actions/workflows/codeql.yml/badge.svg" alt="CodeQL" /></a>

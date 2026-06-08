@@ -347,6 +347,7 @@ select {
 .help-fab:hover { filter: brightness(1.06); }
 
 .help-modal { position: fixed; inset: 0; z-index: 60; display: flex; }
+.help-modal[hidden] { display: none; }
 .help-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.5); }
 .help-dialog {
   position: relative;

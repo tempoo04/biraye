@@ -151,6 +151,23 @@ curated dataset:
 The graph (~1,400 pairs over 6,236 ayahs) is computed once and cached. The **Similar**
 tab lets you browse it; in **Review**, twins surface automatically beside a due ayah.
 
+## Research
+
+BirAye's design rests on two studies — one on the value of Hifz itself, one on the
+learning science behind its core feature. (In the app, the **📖 Research** button
+shows these with a short note on how each is applied.)
+
+1. **Nawaz, N. & Jahangir, S. F. (2015).** *Effects of memorizing Quran by heart (Hifz)
+   on later academic achievement.* Journal of Islamic Studies and Culture, 3(1), 58–64.
+   — children who completed Hifz showed stronger later academic achievement; disciplined
+   verbatim memorization trains memory, attention, and persistence. **BirAye** treats Hifz
+   as serious verbatim training and gives it a retention engine.
+2. **Birnbaum, M. S., Kornell, N., Bjork, E. L. & Bjork, R. A. (2013).** *Why interleaving
+   enhances inductive learning: The roles of discrimination and retrieval.* Memory &
+   Cognition, 41(3), 392–402. — studying similar items mixed together forces the brain to
+   discriminate between confusable things. This is the **Similar (mutashabihat)** tab:
+   near-identical verses drilled side by side with the differences highlighted.
+
 ## Status
 
 Built milestone-by-milestone — see [ROADMAP.md](ROADMAP.md). Done: M0–M6

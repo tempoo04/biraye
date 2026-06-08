@@ -345,6 +345,18 @@ select {
   z-index: 50;
 }
 .help-fab:hover { filter: brightness(1.06); }
+#research-fab { right: 4.4rem; font-size: 1.3rem; }
+
+.research-paper {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.7rem 0.8rem;
+  margin-bottom: 0.8rem;
+  background: #fcfbf7;
+}
+.research-cite { margin: 0 0 0.5rem; font-size: 0.82rem; color: var(--green); font-weight: 600; }
+.research-line { margin: 0.3rem 0 0; font-size: 0.86rem; }
+.research-line b { color: var(--gold); }
 
 .help-modal { position: fixed; inset: 0; z-index: 60; display: flex; }
 .help-modal[hidden] { display: none; }

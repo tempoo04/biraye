@@ -66,6 +66,11 @@ const els = {
   helpModal: document.getElementById("help-modal"),
   helpClose: document.getElementById("help-close"),
   helpBackdrop: document.getElementById("help-backdrop"),
+  // research
+  researchFab: document.getElementById("research-fab"),
+  researchModal: document.getElementById("research-modal"),
+  researchClose: document.getElementById("research-close"),
+  researchBackdrop: document.getElementById("research-backdrop"),
 };
 
 let playingBtn = null;
@@ -779,8 +784,21 @@ function closeHelp() {
 els.helpFab.addEventListener("click", openHelp);
 els.helpClose.addEventListener("click", closeHelp);
 els.helpBackdrop.addEventListener("click", closeHelp);
+
+function openResearch() {
+  els.researchModal.hidden = false;
+}
+function closeResearch() {
+  els.researchModal.hidden = true;
+}
+els.researchFab.addEventListener("click", openResearch);
+els.researchClose.addEventListener("click", closeResearch);
+els.researchBackdrop.addEventListener("click", closeResearch);
+
 document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape" && !els.helpModal.hidden) closeHelp();
+  if (e.key !== "Escape") return;
+  if (!els.helpModal.hidden) closeHelp();
+  if (!els.researchModal.hidden) closeResearch();
 });
 
 /* ---------- language ---------- */

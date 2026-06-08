@@ -191,6 +191,28 @@
 
   <!-- Instructions / how-it-works -->
   <button id="help-fab" class="help-fab" type="button" data-i18n-title="help_btn" aria-label="How it works">?</button>
+  <button id="research-fab" class="help-fab" type="button" data-i18n-title="research_btn" aria-label="Research behind BirAye">📖</button>
+
+  <div id="research-modal" class="help-modal" hidden>
+    <div id="research-backdrop" class="help-backdrop"></div>
+    <div class="help-dialog" role="dialog" aria-modal="true" aria-labelledby="research-title">
+      <button id="research-close" class="help-close" type="button" aria-label="Close">×</button>
+      <h2 id="research-title" data-i18n="research_title">The research behind BirAye</h2>
+      <p class="help-lead" data-i18n="research_intro">BirAye's design rests on two studies — one on the value of Hifz itself, one on the learning science behind its core feature.</p>
+
+      <div class="research-paper">
+        <p class="research-cite" data-i18n="res1_cite">Nawaz, N. &amp; Jahangir, S. F. (2015). Effects of memorizing Quran by heart (Hifz) on later academic achievement. Journal of Islamic Studies and Culture, 3(1), 58–64.</p>
+        <p class="research-line"><b data-i18n="res_about_label">About</b> <span data-i18n="res1_about">Found that children who completed Hifz later showed stronger academic achievement — disciplined verbatim memorization trains memory, attention, and persistence.</span></p>
+        <p class="research-line"><b data-i18n="res_applied_label">In BirAye</b> <span data-i18n="res1_applied">This is the whole premise: BirAye treats Hifz as serious verbatim training and gives it a retention engine, instead of being just another Quran audio player.</span></p>
+      </div>
+
+      <div class="research-paper">
+        <p class="research-cite" data-i18n="res2_cite">Birnbaum, M. S., Kornell, N., Bjork, E. L. &amp; Bjork, R. A. (2013). Why interleaving enhances inductive learning: The roles of discrimination and retrieval. Memory &amp; Cognition, 41(3), 392–402.</p>
+        <p class="research-line"><b data-i18n="res_about_label">About</b> <span data-i18n="res2_about">Showed that studying similar items mixed together — instead of one at a time — helps the brain tell them apart, because it forces discrimination between confusable things.</span></p>
+        <p class="research-line"><b data-i18n="res_applied_label">In BirAye</b> <span data-i18n="res2_applied">This is the Similar (mutashabihat) tab: near-identical verses are drilled side by side with the differing words highlighted, so you stop confusing them — the #1 cause of Hifz errors.</span></p>
+      </div>
+    </div>
+  </div>
 
   <div id="help-modal" class="help-modal" hidden>
     <div id="help-backdrop" class="help-backdrop"></div>

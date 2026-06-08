@@ -188,6 +188,28 @@
   </main>
 
   <audio id="player" preload="none"></audio>
+
+  <!-- Instructions / how-it-works -->
+  <button id="help-fab" class="help-fab" type="button" data-i18n-title="help_btn" aria-label="How it works">?</button>
+
+  <div id="help-modal" class="help-modal" hidden>
+    <div id="help-backdrop" class="help-backdrop"></div>
+    <div class="help-dialog" role="dialog" aria-modal="true" aria-labelledby="help-title">
+      <button id="help-close" class="help-close" type="button" aria-label="Close">×</button>
+      <h2 id="help-title" data-i18n="help_title">How BirAye works</h2>
+      <p class="help-lead" data-i18n="help_intro">BirAye helps you memorize the Quran verse by verse and — more importantly — stop forgetting it. Five tabs:</p>
+      <ul class="help-list">
+        <li><b data-i18n="tab_read">Read</b> — <span data-i18n="help_read">pick a surah, listen to each ayah, and tap “Memorize” to start tracking it.</span></li>
+        <li><b data-i18n="tab_drill">Drill</b> — <span data-i18n="help_drill">loop a range of verses on repeat, with your own repeat counts and speed, to drum them in.</span></li>
+        <li><b data-i18n="tab_similar">Similar</b> — <span data-i18n="help_similar">browse near-identical verses that are easy to mix up; differing words are highlighted so you learn the difference.</span></li>
+        <li><b data-i18n="tab_review">Review</b> — <span data-i18n="help_review">verses come back for recall right before you’d forget them; the help fades as your memory strengthens. Rate yourself honestly.</span></li>
+        <li><b data-i18n="tab_log">Log</b> — <span data-i18n="help_log">a record of every tracked ayah you can export and share with a teacher.</span></li>
+      </ul>
+      <p class="help-tip" data-i18n="help_lang">🌐 Switch language (English / Azerbaijani) with the button in the top-right corner.</p>
+      <p class="help-tip" data-i18n="help_install">📱 On a phone, use “Add to Home Screen” to install BirAye like a normal app.</p>
+    </div>
+  </div>
+
   <script src="/static/i18n.js"></script>
   <script src="/static/app.js"></script>
 </body>

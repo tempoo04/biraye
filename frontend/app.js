@@ -61,6 +61,11 @@ const els = {
   langToggle: document.getElementById("lang-toggle"),
   status: document.getElementById("status"),
   player: document.getElementById("player"),
+  // help / instructions
+  helpFab: document.getElementById("help-fab"),
+  helpModal: document.getElementById("help-modal"),
+  helpClose: document.getElementById("help-close"),
+  helpBackdrop: document.getElementById("help-backdrop"),
 };
 
 let playingBtn = null;
@@ -762,6 +767,20 @@ function stopAudio() {
 els.player.addEventListener("ended", () => {
   if (drill.active) drillEnded();
   else stopAudio();
+});
+
+/* ---------- help / instructions ---------- */
+function openHelp() {
+  els.helpModal.hidden = false;
+}
+function closeHelp() {
+  els.helpModal.hidden = true;
+}
+els.helpFab.addEventListener("click", openHelp);
+els.helpClose.addEventListener("click", closeHelp);
+els.helpBackdrop.addEventListener("click", closeHelp);
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && !els.helpModal.hidden) closeHelp();
 });
 
 /* ---------- language ---------- */

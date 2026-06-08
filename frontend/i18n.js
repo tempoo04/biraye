@@ -80,6 +80,17 @@ const I18N_DICT = {
     log_th_due: "Due",
     log_empty: "Nothing tracked yet. Memorize some ayahs first.",
 
+    help_btn: "How it works",
+    help_title: "How BirAye works",
+    help_intro: "BirAye helps you memorize the Quran verse by verse and — more importantly — stop forgetting it. Five tabs:",
+    help_read: "pick a surah, listen to each ayah, and tap “Memorize” to start tracking it.",
+    help_drill: "loop a range of verses on repeat, with your own repeat counts and speed, to drum them in.",
+    help_similar: "browse near-identical verses that are easy to mix up; differing words are highlighted so you learn the difference.",
+    help_review: "verses come back for recall right before you’d forget them; the help fades as your memory strengthens. Rate yourself honestly.",
+    help_log: "a record of every tracked ayah you can export and share with a teacher.",
+    help_lang: "🌐 Switch language (English / Azerbaijani) with the button in the top-right corner.",
+    help_install: "📱 On a phone, use “Add to Home Screen” to install BirAye like a normal app.",
+
     status_surahs: "Loading surah list…",
     status_surah: "Loading surah…",
     status_review: "Loading review queue…",
@@ -168,6 +179,17 @@ const I18N_DICT = {
     log_th_due: "Vaxt",
     log_empty: "Hələ heç nə yoxdur. Əvvəlcə bəzi ayələri əzbərlə.",
 
+    help_btn: "Necə işləyir",
+    help_title: "BirAye necə işləyir",
+    help_intro: "BirAye Quranı ayə-ayə əzbərləməyə və — daha vacibi — onu unutmamağa kömək edir. Beş tab:",
+    help_read: "surə seç, hər ayəni dinlə və izləməyə başlamaq üçün “Əzbərlə”yə toxun.",
+    help_drill: "bir ayə diapazonunu öz təkrar sayın və sürətinlə döngüyə salaraq beyinə yerit.",
+    help_similar: "asanlıqla qarışdırılan, az qala eyni ayələrə bax; fərqli sözlər işıqlandırılır ki, fərqi öyrənəsən.",
+    help_review: "ayələr unutmağına az qalmış xatırlama üçün geri qayıdır; yaddaşın gücləndikcə kömək azalır. Özünü dürüst qiymətləndir.",
+    help_log: "izlənən hər ayənin qeydi — ixrac edib müəlliminlə paylaşa bilərsən.",
+    help_lang: "🌐 Dili (İngiliscə / Azərbaycanca) yuxarı-sağ küncdəki düymə ilə dəyiş.",
+    help_install: "📱 Telefonda “Ana ekrana əlavə et” ilə BirAye-ni adi tətbiq kimi quraşdır.",
+
     status_surahs: "Surə siyahısı yüklənir…",
     status_surah: "Surə yüklənir…",
     status_review: "Təkrar növbəsi yüklənir…",
@@ -200,6 +222,9 @@ const i18n = (() => {
     });
     document.querySelectorAll("[data-i18n-ph]").forEach((el) => {
       el.setAttribute("placeholder", t(el.dataset.i18nPh));
+    });
+    document.querySelectorAll("[data-i18n-title]").forEach((el) => {
+      el.setAttribute("title", t(el.dataset.i18nTitle));
     });
   }
 

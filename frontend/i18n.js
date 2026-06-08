@@ -212,7 +212,7 @@ const I18N_DICT = {
     res1_applied: "Təməl ideya: BirAye Hifzi ciddi sözbəsöz təlim kimi qəbul edir və ona yadda saxlama mühərriki verir — adi bir Quran audio pleyeri olmaq əvəzinə.",
     res2_cite: "Birnbaum, M. S., Kornell, N., Bjork, E. L. & Bjork, R. A. (2013). Why interleaving enhances inductive learning: The roles of discrimination and retrieval. Memory & Cognition, 41(3), 392–402.",
     res2_about: "Oxşar elementləri bir-bir əvəzinə qarışıq öyrənməyin beynə onları fərqləndirməyə kömək etdiyini göstərdi, çünki qarışdırıla bilən şeylər arasında fərqləndirməyə yönləndirir.",
-    res2_applied: "Bu, Bənzərlər (mutaşabihat) bölməsidir: az qala eyni ayələr fərqli sözlər vurğulanmış halda yan-yana məşq edilir ki, onları qarışdırmayasan — 'hifz' səhvlərinin №1 səbəbi.",
+    res2_applied: "Bu, Bənzərlər (mutaşabihat) bölməsidir: demək olar ki, eyni ayələr fərqli sözlər vurğulanmış halda yan-yana məşq edilir ki, onları qarışdırmayasan — 'hifz' səhvlərinin №1 səbəbi.",
 
     status_surahs: "Surə siyahısı yüklənir…",
     status_surah: "Surə yüklənir…",

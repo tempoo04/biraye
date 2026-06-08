@@ -203,8 +203,8 @@ const I18N_DICT = {
     help_install: "📱 Telefonda “Ana ekrana əlavə et” ilə BirAye-ni adi tətbiq kimi quraşdır.",
 
     research_btn: "Tədqiqat",
-    research_title: "BirAye-nin arxasındakı tədqiqat",
-    research_intro: "BirAye-nin dizaynı iki tədqiqata əsaslanır — biri Hifzin özünün dəyəri haqqında, biri əsas funksiyasının arxasındakı öyrənmə elmi haqqında.",
+    research_title: "BirAye-nin əsaslandığı tədqiqatlar",
+    research_intro: "BirAye bunlardan ilhamlanır — 1.Hifzin özünün dəyəri və 2.Koqnitiv öyrənmə elmi haqqında.",
     res_about_label: "Haqqında —",
     res_applied_label: "BirAye-də —",
     res1_cite: "Nawaz, N. & Jahangir, S. F. (2015). Effects of memorizing Quran by heart (Hifz) on later academic achievement. Journal of Islamic Studies and Culture, 3(1), 58–64.",

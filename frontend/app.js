@@ -246,6 +246,7 @@ function renderSurah(number, surah) {
       `${arabicWordsHtml(ayah.words, ayah.arabic)}` +
       `<span class="ayah-num">${ayah.numberInSurah}</span>`;
     arabic._seg = ayah.segments || [];
+    arabic._audio = ayah.audio || "";
 
     const trans = document.createElement("p");
     trans.className = "ayah-translation";
@@ -392,9 +393,11 @@ function renderArabic(revealed) {
   if (currentItem.scaffold === "full") {
     els.rvArabic.innerHTML = arabicWordsHtml(currentItem.words, currentItem.arabic);
     els.rvArabic._seg = currentItem.segments || [];
+    els.rvArabic._audio = currentItem.audio || "";
   } else {
     els.rvArabic.innerHTML = maskArabic(currentItem.arabic || "", currentItem.scaffold, revealed);
     els.rvArabic._seg = null;
+    els.rvArabic._audio = "";
   }
 }
 
@@ -648,6 +651,7 @@ function playDrillCurrent() {
   });
   els.drillArabic.innerHTML = arabicWordsHtml(a.words, a.arabic);
   els.drillArabic._seg = a.segments || [];
+  els.drillArabic._audio = a.audio || "";
   els.drillTranslation.textContent = a.translation;
   els.player.src = a.audio;
   els.player.playbackRate = valOf(els.drillSpeed);
@@ -849,6 +853,54 @@ function stopAudio() {
 els.player.addEventListener("ended", () => {
   if (drill.active) drillEnded();
   else stopAudio();
+});
+
+// Tap any highlighted word to jump the audio to that word and play from there.
+function seekToWord(host, wordIdx) {
+  const seg = (host._seg || []).find((s) => s[0] === wordIdx);
+  if (!seg || !host._audio) return;
+  const target = seg[1] / 1000; // segment start (ms) -> seconds
+  const startAt = () => {
+    try {
+      els.player.currentTime = target;
+    } catch {
+      /* metadata not ready yet; loadedmetadata handler will retry */
+    }
+    els.player.play().catch((err) => setStatus(i18n.t("err_audio", { M: err.message }), true));
+  };
+
+  // Already playing this exact ayah: just seek, keep tracker/scroll as-is.
+  if (trackerHost === host && els.player.src === host._audio) {
+    startAt();
+    return;
+  }
+
+  stopAudio();
+  els.player.src = host._audio;
+  els.player.playbackRate = drill.active ? valOf(els.drillSpeed) : 1;
+  showTracker(host);
+  // reflect playing state on the row's / card's Listen button so stopAudio resets it
+  const row = host.closest(".ayah");
+  const btn = row ? row.querySelector(".play-btn") : host === els.rvArabic ? els.rvListen : null;
+  if (btn) {
+    btn.classList.add("playing");
+    btn.dataset.label = btn.dataset.label || btn.textContent;
+    btn.textContent = i18n.t("btn_playing");
+    playingBtn = btn;
+  }
+  if (els.player.readyState >= 1) {
+    startAt();
+  } else {
+    els.player.addEventListener("loadedmetadata", startAt, { once: true });
+    els.player.load(); // preload="none" needs an explicit kick to fetch metadata
+  }
+}
+
+document.addEventListener("click", (e) => {
+  const w = e.target.closest(".w");
+  if (!w) return;
+  const host = w.closest(".ayah-arabic");
+  if (host) seekToWord(host, Number(w.dataset.w));
 });
 
 /* ---------- help / instructions ---------- */

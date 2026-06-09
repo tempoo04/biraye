@@ -332,8 +332,10 @@ select {
 .w {
   border-radius: 5px;
   padding: 0 0.06em;
+  cursor: pointer;
   transition: background-color 0.12s ease, color 0.12s ease;
 }
+.w:hover { background: #f0ead2; }
 .w-on {
   background: var(--gold);
   color: var(--green);

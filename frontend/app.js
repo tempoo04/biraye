@@ -859,6 +859,12 @@ els.player.addEventListener("ended", () => {
 function seekToWord(host, wordIdx) {
   const seg = (host._seg || []).find((s) => s[0] === wordIdx);
   if (!seg || !host._audio) return;
+  // Tapping a word resumes playback, so a paused drill is no longer paused —
+  // keep the drill state + Pause/Resume button label in sync.
+  if (drill.active && drill.paused) {
+    drill.paused = false;
+    els.drillPause.textContent = i18n.t("drill_pause");
+  }
   const target = seg[1] / 1000; // segment start (ms) -> seconds
   const startAt = () => {
     try {

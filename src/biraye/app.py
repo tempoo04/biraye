@@ -7,6 +7,7 @@ or:  py -m uvicorn biraye.app:app --reload --app-dir src
 
 from __future__ import annotations
 
+import mimetypes
 from datetime import date
 from pathlib import Path
 
@@ -17,6 +18,11 @@ from pydantic import BaseModel, Field
 
 from . import __version__, data, db, memory, mutashabihat, scheduler
 from .scheduler import RATINGS
+
+# Windows' registry often lacks web-font mime types; register so StaticFiles
+# serves the bundled Quran font as font/woff2 rather than text/plain.
+mimetypes.add_type("font/woff2", ".woff2")
+mimetypes.add_type("font/woff", ".woff")
 
 FRONTEND_DIR = Path(__file__).resolve().parents[2] / "frontend"
 

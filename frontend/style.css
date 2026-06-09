@@ -1,3 +1,12 @@
+/* Amiri Quran — OFL, purpose-built for vocalized Uthmani text. Self-hosted
+   (arabic subset) so it works offline and needs no third-party CDN. */
+@font-face {
+  font-family: "Amiri Quran";
+  src: url("/static/fonts/amiri-quran.woff2") format("woff2");
+  font-display: swap;
+  unicode-range: U+0600-06FF, U+0750-077F, U+08A0-08FF, U+FB50-FDFF, U+FE70-FEFF;
+}
+
 :root {
   --green: #0d4f3c;
   --green-light: #1a6b52;
@@ -91,7 +100,7 @@ select {
   line-height: 2.4;
   text-align: right;
   direction: rtl;
-  font-family: "Traditional Arabic", "Amiri", "Scheherazade New", serif;
+  font-family: "Amiri Quran", "Scheherazade New", "Amiri", "Traditional Arabic", serif;
 }
 .ayah-num {
   display: inline-block;

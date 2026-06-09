@@ -17,6 +17,14 @@ data/*.db
 .swarm/
 .claude/
 
+# Test / coverage / tooling artifacts
+.coverage
+coverage.xml
+htmlcov/
+.pytest_cache/
+.lighthouseci/
+node_modules/
+
 # IDE / editor
 .idea/
 .vscode/

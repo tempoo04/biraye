@@ -13,6 +13,7 @@
 <p align="center">
   <a href="https://github.com/tempoo04/biraye/actions/workflows/ci.yml"><img src="https://github.com/tempoo04/biraye/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
   <a href="https://github.com/tempoo04/biraye/actions/workflows/codeql.yml"><img src="https://github.com/tempoo04/biraye/actions/workflows/codeql.yml/badge.svg" alt="CodeQL" /></a>
+  <a href="https://codecov.io/gh/tempoo04/biraye"><img src="https://codecov.io/gh/tempoo04/biraye/branch/main/graph/badge.svg" alt="coverage" /></a>
   <img src="https://img.shields.io/badge/python-3.12-blue.svg" alt="Python 3.12" />
   <img src="https://img.shields.io/badge/FastAPI-009688.svg?logo=fastapi&logoColor=white" alt="FastAPI" />
   <img src="https://img.shields.io/badge/PWA-installable-5a0fc8.svg" alt="PWA" />

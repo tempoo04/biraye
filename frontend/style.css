@@ -327,6 +327,18 @@ select {
 }
 .drill-status { font-size: 0.82rem; color: var(--green-light); font-weight: 600; margin: 0 0 0.6rem; }
 
+/* ---- now-playing tracker (word-level, follows audio time) ---- */
+.playing-ayah { background: #fbf7e8; border-radius: 8px; }
+.w {
+  border-radius: 5px;
+  padding: 0 0.06em;
+  transition: background-color 0.12s ease, color 0.12s ease;
+}
+.w-on {
+  background: var(--gold);
+  color: var(--green);
+}
+
 /* ---- instructions (help) ---- */
 .help-fab {
   position: fixed;

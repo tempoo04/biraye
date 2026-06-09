@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="frontend/brand-hero.jpg" alt="BirAye" width="640" />
+  <img src="frontend/brand-hero.png" alt="BirAye" width="640" />
 </p>
 
 <h1 align="center">BirAye &nbsp;<span dir="rtl">بِر آية</span></h1>
@@ -44,8 +44,10 @@ and similar-verse disambiguation.
 
 - **Backend:** Python / FastAPI + SQLite
 - **Frontend:** responsive web (browser + installable PWA, phone-friendly)
-- **Data:** open APIs — [alquran.cloud](https://alquran.cloud) for Uthmani text,
-  Muhammad Asad translation, and Mishary Alafasy per-ayah audio — cached locally.
+- **Data:** open APIs — [quran.com](https://quran.com) for word-by-word Uthmani
+  text, Saheeh International translation, Mishary Alafasy per-ayah audio and the
+  word-level audio timings that drive the highlight; [alquran.cloud](https://alquran.cloud)
+  for the full-text similarity graph — all cached locally.
 
 ## Run it
 

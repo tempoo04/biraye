@@ -59,8 +59,10 @@ def _enrich(item: dict) -> dict:
         item = {
             **item,
             "arabic": ayah["arabic"],
+            "words": ayah.get("words", []),
             "translation": ayah["translation"],
             "audio": ayah["audio"],
+            "segments": ayah.get("segments", []),
             "surahName": surah["englishName"],
             "scaffold": scheduler.scaffold_for(item["interval_days"]),
         }

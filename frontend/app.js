@@ -94,6 +94,15 @@ function escapeHtml(s) {
 function todayISO() {
   return new Date().toISOString().slice(0, 10);
 }
+// Render Arabic as one span per word so playback can highlight the current word.
+// `words` is the per-word list from the API; its index matches the timing
+// segments' word_index. Falls back to plain text when no word list is present.
+function arabicWordsHtml(words, fallback) {
+  if (!words || !words.length) return escapeHtml(fallback || "");
+  return words
+    .map((w, i) => `<span class="w" data-w="${i}">${escapeHtml(w)}</span>`)
+    .join(" ");
+}
 
 /* ---------- mutashabihat (similar verses) ---------- */
 function renderTokens(tokens) {
@@ -234,7 +243,9 @@ function renderSurah(number, surah) {
     const arabic = document.createElement("div");
     arabic.className = "ayah-arabic";
     arabic.innerHTML =
-      `${escapeHtml(ayah.arabic)}<span class="ayah-num">${ayah.numberInSurah}</span>`;
+      `${arabicWordsHtml(ayah.words, ayah.arabic)}` +
+      `<span class="ayah-num">${ayah.numberInSurah}</span>`;
+    arabic._seg = ayah.segments || [];
 
     const trans = document.createElement("p");
     trans.className = "ayah-translation";
@@ -375,11 +386,16 @@ function maskArabic(arabic, scaffold, revealed) {
 }
 
 function renderArabic(revealed) {
-  els.rvArabic.innerHTML = maskArabic(
-    currentItem.arabic || "",
-    currentItem.scaffold,
-    revealed
-  );
+  // At the "full" scaffold audio is available, so render per-word spans and
+  // attach timings for word-level highlight. Other levels mask/withdraw audio,
+  // so plain (masked) text is fine and carries no timing.
+  if (currentItem.scaffold === "full") {
+    els.rvArabic.innerHTML = arabicWordsHtml(currentItem.words, currentItem.arabic);
+    els.rvArabic._seg = currentItem.segments || [];
+  } else {
+    els.rvArabic.innerHTML = maskArabic(currentItem.arabic || "", currentItem.scaffold, revealed);
+    els.rvArabic._seg = null;
+  }
 }
 
 function nextCard() {
@@ -584,6 +600,8 @@ async function startDrill() {
     ayah: a.numberInSurah,
     audio: a.audio,
     arabic: a.arabic,
+    words: a.words || [],
+    segments: a.segments || [],
     translation: a.translation,
   }));
   if (!drill.slice.length) return;
@@ -628,11 +646,13 @@ function playDrillCurrent() {
     pass: drill.pass + 1,
     range: repLabel(range),
   });
-  els.drillArabic.innerHTML = escapeHtml(a.arabic);
+  els.drillArabic.innerHTML = arabicWordsHtml(a.words, a.arabic);
+  els.drillArabic._seg = a.segments || [];
   els.drillTranslation.textContent = a.translation;
   els.player.src = a.audio;
   els.player.playbackRate = valOf(els.drillSpeed);
   els.player.play().catch((err) => setStatus(i18n.t("err_audio", { M: err.message }), true));
+  showTracker(els.drillArabic); // word highlight follows the current verse
 }
 
 function drillEnded() {
@@ -665,6 +685,7 @@ function stopDrill() {
   drill.active = false;
   drill.paused = false;
   els.player.pause();
+  clearTracker();
   els.drillStart.hidden = false;
   els.drillPause.hidden = true;
   els.drillStop.hidden = true;
@@ -746,6 +767,56 @@ async function loadPairContrast(pair, container) {
 }
 els.simFilter.addEventListener("change", renderPairs);
 
+/* ---------- now-playing tracker (word-level, follows audio time) ---------- */
+// Highlights the word currently being recited, in sync with audio. `host` is
+// the .ayah-arabic element; its `_seg` property holds timing segments
+// [[wordIndex, startMs, endMs], ...] that line up with the rendered .w spans.
+// If an ayah has no timing the words simply don't light — there is no bar.
+let trackerHost = null;
+let trackerSeg = null;
+let trackerWords = [];
+let trackerActive = -1;
+
+function showTracker(host) {
+  clearTracker();
+  if (!host) return;
+  trackerHost = host;
+  trackerSeg = host._seg && host._seg.length ? host._seg : null;
+  trackerWords = host.querySelectorAll(".w");
+  trackerActive = -1;
+  host.classList.add("playing-ayah");
+  host.scrollIntoView({ block: "center", behavior: "smooth" });
+}
+
+function updateTracker() {
+  if (!trackerHost || !trackerSeg || !trackerWords.length) return;
+  const t = els.player.currentTime * 1000; // segments are ms of media time
+  let active = -1;
+  for (const s of trackerSeg) {
+    if (t >= s[1] && t < s[2]) {
+      active = s[0];
+      break;
+    }
+    if (t >= s[2]) active = s[0]; // keep last passed word lit across gaps
+  }
+  if (active !== trackerActive) {
+    if (trackerWords[trackerActive]) trackerWords[trackerActive].classList.remove("w-on");
+    if (trackerWords[active]) trackerWords[active].classList.add("w-on");
+    trackerActive = active;
+  }
+}
+
+function clearTracker() {
+  if (!trackerHost) return;
+  trackerHost.classList.remove("playing-ayah");
+  trackerHost.querySelectorAll(".w-on").forEach((w) => w.classList.remove("w-on"));
+  trackerHost = null;
+  trackerSeg = null;
+  trackerWords = [];
+  trackerActive = -1;
+}
+els.player.addEventListener("timeupdate", updateTracker);
+
 /* ---------- audio ---------- */
 function togglePlay(url, btn) {
   if (playingBtn === btn && !els.player.paused) {
@@ -760,9 +831,15 @@ function togglePlay(url, btn) {
   btn.dataset.label = btn.textContent;
   btn.textContent = i18n.t("btn_playing");
   playingBtn = btn;
+  // highlight + track the ayah this button belongs to (Read row or Review card)
+  const host =
+    btn.closest(".ayah")?.querySelector(".ayah-arabic") ||
+    (btn === els.rvListen ? els.rvArabic : null);
+  showTracker(host);
 }
 function stopAudio() {
   els.player.pause();
+  clearTracker();
   if (playingBtn) {
     playingBtn.classList.remove("playing");
     playingBtn.textContent = playingBtn.dataset.label || i18n.t("btn_listen");

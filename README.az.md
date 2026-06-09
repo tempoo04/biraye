@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="frontend/brand-hero.jpg" alt="BirAye" width="640" />
+  <img src="frontend/brand-hero.png" alt="BirAye" width="640" />
 </p>
 
 <h1 align="center">BirAye &nbsp;<span dir="rtl">بِر آية</span></h1>
@@ -45,8 +45,10 @@ götürülməsi və oxşar ayələrin fərqləndirilməsi.
 
 - **Backend:** Python / FastAPI + SQLite
 - **Frontend:** uyğunlaşan veb (brauzer + quraşdırıla bilən PWA, telefona uyğun)
-- **Data:** açıq API-lər — [alquran.cloud](https://alquran.cloud) Üsmani mətni,
-  Muhəmməd Əsəd tərcüməsi və Mişari Əlafasi ayə-ayə audiosu üçün — local olaraq keşlənir.
+- **Data:** açıq API-lər — söz-söz Üsmani mətni, Saheeh International tərcüməsi,
+  Mişari Əlafasi ayə-ayə audiosu və vurğulamanı idarə edən söz səviyyəsində audio
+  vaxtları üçün [quran.com](https://quran.com); tam-mətn oxşarlıq qrafiki üçün
+  [alquran.cloud](https://alquran.cloud) — hamısı local olaraq keşlənir.
 
 ## İşə salmaq
 

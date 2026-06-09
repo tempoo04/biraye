@@ -1,30 +1,43 @@
-"""Quran data access — fetches text, translation and per-ayah audio from the
-open alquran.cloud API and caches results locally as JSON.
+"""Quran data access — fetches text, translation and per-ayah audio, and caches
+results locally as JSON.
 
-Editions used:
-  - quran-uthmani : Arabic Uthmani script
-  - en.asad       : English translation (Muhammad Asad)
-  - ar.alafasy    : audio recitation (Mishary Alafasy), provides per-ayah mp3 URLs
+Sources:
+  - quran.com API v4 : per-surah Arabic (word-by-word Uthmani), English
+    translation (Saheeh International), Mishary Alafasy per-ayah audio, and the
+    word-by-word audio *timing segments* that drive word-level highlight. Using
+    a single source keeps the audio, the word text, and the timings perfectly
+    aligned (no drift, no basmala offset).
+  - alquran.cloud   : the surah index (names/metadata) and the full-Quran text
+    used only to build the mutashabihat similarity graph.
 
 Cache lives in <repo>/data/cache/. Once a surah is cached the app works offline.
 """
 
 from __future__ import annotations
 
+import html
 import json
+import re
 from pathlib import Path
 
 import httpx
 
 API_BASE = "https://api.alquran.cloud/v1"
 TEXT_EDITION = "quran-uthmani"
-TRANSLATION_EDITION = "en.asad"
-AUDIO_EDITION = "ar.alafasy"
+
+# quran.com: word text, translation, matched audio + per-word timing segments.
+QURAN_API = "https://api.quran.com/api/v4"
+QURAN_AUDIO_BASE = "https://verses.quran.com/"
+RECITER_ID = 7  # Mishary Rashid al-Afasy
+TRANSLATION_ID = 20  # Saheeh International (clear, standard English)
 
 CACHE_DIR = Path(__file__).resolve().parents[2] / "data" / "cache"
 CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
-_TIMEOUT = httpx.Timeout(20.0)
+_TIMEOUT = httpx.Timeout(30.0)
+_SUP_RE = re.compile(r"<sup\b[^>]*>.*?</sup>", re.DOTALL)  # footnote markers (drop content too)
+_TAG_RE = re.compile(r"<[^>]+>")
+_WS_RE = re.compile(r"\s+")
 
 
 class DataError(RuntimeError):
@@ -102,14 +115,50 @@ def get_surah_index() -> list[dict]:
     return index
 
 
+def _normalize_segment(seg: list[int]) -> list[int] | None:
+    """Normalize a quran.com timing segment to ``[word_index_0based, start_ms, end_ms]``.
+
+    quran.com emits ``[seg_no, word_no, start, end]`` (4 ints) or
+    ``[word_no, start, end]`` (3 ints); word numbers are 1-based and count only
+    pronounced words (the ayah-end marker is excluded), matching the word spans
+    the frontend renders. Returns ``None`` for malformed rows so they are skipped.
+    """
+    try:
+        if len(seg) >= 4:
+            word_no, start, end = int(seg[1]), int(seg[2]), int(seg[3])
+        else:
+            word_no, start, end = int(seg[0]), int(seg[1]), int(seg[2])
+    except (TypeError, ValueError, IndexError):
+        return None
+    if word_no < 1 or end <= start:
+        return None
+    return [word_no - 1, start, end]
+
+
+def _clean_translation(text: str) -> str:
+    """Strip footnote markers and markup from a quran.com translation string.
+
+    Footnotes arrive as ``<sup foot_note=...>1</sup>`` — drop the whole element
+    (including the digit) so no stray numbers leak into the displayed text.
+    """
+    text = _SUP_RE.sub("", text or "")
+    text = _TAG_RE.sub("", text)
+    return _WS_RE.sub(" ", html.unescape(text)).strip()
+
+
 def get_surah(number: int) -> dict:
-    """Return one surah merged across text/translation/audio editions.
+    """Return one surah with per-ayah Arabic, translation, audio and word timings.
+
+    All ayah content comes from quran.com so the word text, audio recording and
+    timing segments are mutually aligned. Surah metadata comes from the cached
+    alquran.cloud index.
 
     Shape:
         {
           "number": int, "name": str, "englishName": str, "ayahCount": int,
           "ayahs": [
-            {"numberInSurah": int, "arabic": str, "translation": str, "audio": str}
+            {"numberInSurah": int, "arabic": str, "translation": str,
+             "audio": str, "segments": [[word_index, start_ms, end_ms], ...]}
           ]
         }
     """
@@ -120,38 +169,62 @@ def get_surah(number: int) -> dict:
     if cached is not None:
         return cached  # type: ignore[return-value]
 
-    editions = ",".join([TEXT_EDITION, TRANSLATION_EDITION, AUDIO_EDITION])
+    meta = next((s for s in get_surah_index() if s["number"] == number), None)
+    if meta is None:
+        raise DataError(f"Unknown surah: {number}")
+
+    params = {
+        "words": "true",
+        "word_fields": "text_uthmani",
+        "translations": TRANSLATION_ID,
+        "audio": RECITER_ID,
+        "per_page": 300,
+    }
     try:
-        resp = httpx.get(f"{API_BASE}/surah/{number}/editions/{editions}", timeout=_TIMEOUT)
+        resp = httpx.get(f"{QURAN_API}/verses/by_chapter/{number}", params=params, timeout=_TIMEOUT)
         resp.raise_for_status()
-        blocks = resp.json()["data"]
+        verses = resp.json()["verses"]
     except (httpx.HTTPError, KeyError, ValueError) as exc:
         raise DataError(f"Could not fetch surah {number}: {exc}") from exc
 
-    by_edition = {b["edition"]["identifier"]: b for b in blocks}
-    text_block = by_edition[TEXT_EDITION]
-    trans_ayahs = {a["numberInSurah"]: a for a in by_edition[TRANSLATION_EDITION]["ayahs"]}
-    audio_ayahs = {a["numberInSurah"]: a for a in by_edition[AUDIO_EDITION]["ayahs"]}
-
     ayahs = []
-    for a in text_block["ayahs"]:
-        n = a["numberInSurah"]
+    for v in verses:
+        # One entry per pronounced word-object; this is the unit the timing
+        # segments are keyed to, so the frontend renders one span per entry and
+        # word_index lines up exactly (don't whitespace-split the joined string —
+        # some words carry an internal space for a pause mark).
+        word_list = [
+            w.get("text_uthmani", "")
+            for w in v.get("words", [])
+            if w.get("char_type_name") == "word"
+        ]
+        arabic = " ".join(word_list).strip()
+
+        translations = v.get("translations") or []
+        translation = _clean_translation(translations[0]["text"]) if translations else ""
+
+        audio = v.get("audio") or {}
+        audio_url = QURAN_AUDIO_BASE + audio["url"] if audio.get("url") else ""
+        segments = [s for s in (_normalize_segment(x) for x in audio.get("segments") or []) if s]
+
         ayahs.append(
             {
-                "numberInSurah": n,
-                "arabic": a["text"],
-                "translation": trans_ayahs.get(n, {}).get("text", ""),
-                "audio": audio_ayahs.get(n, {}).get("audio", ""),
+                "numberInSurah": v["verse_number"],
+                "arabic": arabic,
+                "words": word_list,
+                "translation": translation,
+                "audio": audio_url,
+                "segments": segments,
             }
         )
 
     surah = {
-        "number": text_block["number"],
-        "name": text_block["name"],
-        "englishName": text_block["englishName"],
-        "englishNameTranslation": text_block["englishNameTranslation"],
-        "ayahCount": text_block["numberOfAyahs"],
-        "revelationType": text_block["revelationType"],
+        "number": meta["number"],
+        "name": meta["name"],
+        "englishName": meta["englishName"],
+        "englishNameTranslation": meta["englishNameTranslation"],
+        "ayahCount": meta["ayahCount"],
+        "revelationType": meta["revelationType"],
         "ayahs": ayahs,
     }
     _write_cache(f"surah_{number:03d}", surah)

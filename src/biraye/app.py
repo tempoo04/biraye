@@ -67,6 +67,7 @@ def _enrich(item: dict) -> dict:
             "arabic": ayah["arabic"],
             "words": ayah.get("words", []),
             "translation": ayah["translation"],
+            "translations": ayah.get("translations", {}),
             "audio": ayah["audio"],
             "segments": ayah.get("segments", []),
             "surahName": surah["englishName"],

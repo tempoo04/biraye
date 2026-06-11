@@ -94,6 +94,12 @@ function escapeHtml(s) {
 function todayISO() {
   return new Date().toISOString().slice(0, 10);
 }
+// Pick a verse translation for the current UI language, falling back to the
+// per-language map's English, then the flat `translation` field.
+function trOf(obj) {
+  const t = obj && obj.translations;
+  return (t && (t[i18n.getLang()] || t.en)) || (obj && obj.translation) || "";
+}
 // Render Arabic as one span per word so playback can highlight the current word.
 // `words` is the per-word list from the API; its index matches the timing
 // segments' word_index. Falls back to plain text when no word list is present.
@@ -250,7 +256,7 @@ function renderSurah(number, surah) {
 
     const trans = document.createElement("p");
     trans.className = "ayah-translation";
-    trans.textContent = ayah.translation;
+    trans.textContent = trOf(ayah);
 
     const actions = document.createElement("div");
     actions.className = "ayah-actions";
@@ -435,7 +441,7 @@ function renderCard() {
   els.rvShow.dataset.revealed = "0";
   els.rvShow.textContent = i18n.t("reveal_ayah");
 
-  els.rvTranslation.textContent = currentItem.translation || "";
+  els.rvTranslation.textContent = trOf(currentItem);
   els.rvTranslation.classList.add("reveal-hidden");
   els.rvReveal.textContent = i18n.t("reveal_tr");
 
@@ -606,6 +612,7 @@ async function startDrill() {
     words: a.words || [],
     segments: a.segments || [],
     translation: a.translation,
+    translations: a.translations || {},
   }));
   if (!drill.slice.length) return;
 
@@ -652,7 +659,7 @@ function playDrillCurrent() {
   els.drillArabic.innerHTML = arabicWordsHtml(a.words, a.arabic);
   els.drillArabic._seg = a.segments || [];
   els.drillArabic._audio = a.audio || "";
-  els.drillTranslation.textContent = a.translation;
+  els.drillTranslation.textContent = trOf(a);
   els.player.src = a.audio;
   els.player.playbackRate = valOf(els.drillSpeed);
   els.player.play().catch((err) => setStatus(i18n.t("err_audio", { M: err.message }), true));
@@ -961,6 +968,7 @@ window.addEventListener("langchange", () => {
   // pause button label reflects live drill state, not just the static default
   if (drill.active) {
     els.drillPause.textContent = i18n.t(drill.paused ? "drill_resume" : "drill_pause");
+    els.drillTranslation.textContent = trOf(drill.slice[drill.idx]);
   }
 });
 

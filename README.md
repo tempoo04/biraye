@@ -46,7 +46,8 @@ and similar-verse disambiguation.
 - **Backend:** Python / FastAPI + SQLite
 - **Frontend:** responsive web (browser + installable PWA, phone-friendly)
 - **Data:** open APIs — [quran.com](https://quran.com) for word-by-word Uthmani
-  text, Saheeh International translation, Mishary Alafasy per-ayah audio and the
+  text, English (Saheeh International) and Azerbaijani (Bünyadov–Məmmədəliyev)
+  translations, Mishary Alafasy per-ayah audio and the
   word-level audio timings that drive the highlight; [alquran.cloud](https://alquran.cloud)
   for the full-text similarity graph — all cached locally.
 

@@ -45,7 +45,8 @@ götürülməsi və oxşar ayələrin fərqləndirilməsi.
 
 - **Backend:** Python / FastAPI + SQLite
 - **Frontend:** uyğunlaşan veb (brauzer + quraşdırıla bilən PWA, telefona uyğun)
-- **Data:** açıq API-lər — söz-söz Üsmani mətni, Saheeh International tərcüməsi,
+- **Data:** açıq API-lər — söz-söz Üsmani mətni, ingilis (Saheeh International) və
+  Azərbaycan (Bünyadov–Məmmədəliyev) tərcümələri,
   Mişari Əlafasi ayə-ayə audiosu və vurğulamanı idarə edən söz səviyyəsində audio
   vaxtları üçün [quran.com](https://quran.com); tam-mətn oxşarlıq qrafiki üçün
   [alquran.cloud](https://alquran.cloud) — hamısı local olaraq keşlənir.

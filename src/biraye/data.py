@@ -29,7 +29,14 @@ TEXT_EDITION = "quran-uthmani"
 QURAN_API = "https://api.quran.com/api/v4"
 QURAN_AUDIO_BASE = "https://verses.quran.com/"
 RECITER_ID = 7  # Mishary Rashid al-Afasy
-TRANSLATION_ID = 20  # Saheeh International (clear, standard English)
+
+# Translations are fetched together (one request) and keyed by UI language so
+# the frontend can switch with the EN/AZ toggle. Mapped by quran.com resource_id.
+TRANSLATIONS = {
+    "en": 20,  # Saheeh International (clear, standard English)
+    "az": 23,  # Bünyadov–Məmmədəliyev (Azerbaijani)
+}
+TRANSLATION_ID = TRANSLATIONS["en"]  # primary / fallback
 
 CACHE_DIR = Path(__file__).resolve().parents[2] / "data" / "cache"
 CACHE_DIR.mkdir(parents=True, exist_ok=True)
@@ -158,6 +165,7 @@ def get_surah(number: int) -> dict:
           "number": int, "name": str, "englishName": str, "ayahCount": int,
           "ayahs": [
             {"numberInSurah": int, "arabic": str, "translation": str,
+             "translations": {"en": str, "az": str},
              "audio": str, "segments": [[word_index, start_ms, end_ms], ...]}
           ]
         }
@@ -173,10 +181,11 @@ def get_surah(number: int) -> dict:
     if meta is None:
         raise DataError(f"Unknown surah: {number}")
 
+    id_to_lang = {tid: lang for lang, tid in TRANSLATIONS.items()}
     params = {
         "words": "true",
         "word_fields": "text_uthmani",
-        "translations": TRANSLATION_ID,
+        "translations": ",".join(str(t) for t in TRANSLATIONS.values()),
         "audio": RECITER_ID,
         "per_page": 300,
     }
@@ -200,8 +209,14 @@ def get_surah(number: int) -> dict:
         ]
         arabic = " ".join(word_list).strip()
 
-        translations = v.get("translations") or []
-        translation = _clean_translation(translations[0]["text"]) if translations else ""
+        # Map each translation to its UI language by resource_id; keep a flat
+        # `translation` (English) for backward compatibility.
+        translations_by_lang = {}
+        for t in v.get("translations") or []:
+            lang = id_to_lang.get(t.get("resource_id"))
+            if lang:
+                translations_by_lang[lang] = _clean_translation(t.get("text", ""))
+        translation = translations_by_lang.get("en", "")
 
         audio = v.get("audio") or {}
         audio_url = QURAN_AUDIO_BASE + audio["url"] if audio.get("url") else ""
@@ -213,6 +228,7 @@ def get_surah(number: int) -> dict:
                 "arabic": arabic,
                 "words": word_list,
                 "translation": translation,
+                "translations": translations_by_lang,
                 "audio": audio_url,
                 "segments": segments,
             }

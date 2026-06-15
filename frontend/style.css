@@ -141,13 +141,9 @@ select {
 }
 .search-name { font-weight: 600; color: var(--green); }
 .search-ar {
+  margin-inline-start: auto;
   font-family: "Amiri Quran", "Scheherazade New", "Amiri", serif;
   color: #333;
-}
-.search-mean {
-  margin-inline-start: auto;
-  font-size: 0.8rem;
-  color: var(--muted);
 }
 .search-none { padding: 0.6rem; color: var(--muted); font-size: 0.9rem; }
 

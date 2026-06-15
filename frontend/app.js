@@ -13,6 +13,8 @@ const els = {
   viewReview: document.getElementById("view-review"),
   viewLog: document.getElementById("view-log"),
   simFilter: document.getElementById("sim-filter"),
+  simSearch: document.getElementById("sim-search"),
+  simResults: document.getElementById("sim-results"),
   simCount: document.getElementById("sim-count"),
   simList: document.getElementById("sim-list"),
   dueBadge: document.getElementById("due-badge"),
@@ -47,6 +49,8 @@ const els = {
   rvSimilar: document.getElementById("rv-similar"),
   // drill
   drillSurah: document.getElementById("drill-surah"),
+  drillSearch: document.getElementById("drill-search"),
+  drillResults: document.getElementById("drill-results"),
   drillFrom: document.getElementById("drill-from"),
   drillTo: document.getElementById("drill-to"),
   drillEach: document.getElementById("drill-each"),
@@ -238,8 +242,8 @@ async function loadSurah(number) {
 }
 
 /* ---------- surah search ---------- */
-// Diacritic/tatweel-insensitive normalization so "Fatiha", "fātiḥah", the
-// Arabic name and the English meaning all match one loose query.
+// Diacritic/tatweel-insensitive normalization so "Fatiha", "fātiḥah" and the
+// Arabic name all match one loose query.
 function normalizeSearch(s) {
   return (s || "")
     .toLowerCase()
@@ -248,110 +252,111 @@ function normalizeSearch(s) {
     .trim();
 }
 
+// Match surahs by number (prefix) or by English / Arabic name — no meanings.
 function searchSurahs(query) {
   const q = normalizeSearch(query);
   if (!q) return [];
   const digits = q.replace(/\D/g, "");
   return surahList.filter((s) => {
     if (digits && String(s.number).startsWith(digits)) return true;
-    return (
-      normalizeSearch(s.englishName).includes(q) ||
-      normalizeSearch(s.name).includes(q)
-    );
+    return normalizeSearch(s.englishName).includes(q) || normalizeSearch(s.name).includes(q);
   });
 }
 
-let searchMatches = []; // current result list (capped)
-let searchActive = -1; // highlighted index for keyboard nav
+// Reusable typeahead bound to one (input, results-list, select) triple. The
+// select stays as source of truth / fallback; picking a result sets its value
+// and fires `change`, so each tab's existing change handler still runs.
+function makeSurahSearch({ input, results, select }) {
+  let matches = []; // current results (capped)
+  let active = -1; // highlighted index for keyboard nav
 
-function openSearch(open) {
-  els.surahResults.hidden = !open;
-  els.surahSearch.setAttribute("aria-expanded", open ? "true" : "false");
-}
+  const open = (show) => {
+    results.hidden = !show;
+    input.setAttribute("aria-expanded", show ? "true" : "false");
+  };
+  const close = () => {
+    open(false);
+    active = -1;
+    input.removeAttribute("aria-activedescendant");
+  };
+  const render = (found) => {
+    matches = found.slice(0, 10);
+    active = -1;
+    if (!found.length) {
+      results.innerHTML = `<li class="search-none" aria-disabled="true">${i18n.t("search_none")}</li>`;
+    } else {
+      results.innerHTML = matches
+        .map(
+          (s, i) =>
+            `<li class="search-opt" role="option" id="${input.id}-opt-${i}" data-num="${s.number}">` +
+            `<span class="search-num">${s.number}</span>` +
+            `<span class="search-name">${escapeHtml(s.englishName)}</span>` +
+            `<span class="search-ar">${escapeHtml(s.name)}</span></li>`
+        )
+        .join("");
+    }
+    open(true);
+  };
+  const highlight = () => {
+    const opts = results.querySelectorAll(".search-opt");
+    opts.forEach((el, i) => el.classList.toggle("active", i === active));
+    if (active >= 0 && opts[active]) {
+      input.setAttribute("aria-activedescendant", `${input.id}-opt-${active}`);
+      opts[active].scrollIntoView({ block: "nearest" });
+    } else {
+      input.removeAttribute("aria-activedescendant");
+    }
+  };
+  const pick = (number) => {
+    const s = surahList.find((x) => x.number === Number(number));
+    input.value = s ? `${s.number}. ${s.englishName}` : "";
+    select.value = String(number);
+    select.dispatchEvent(new Event("change"));
+    close();
+  };
 
-function closeSearch() {
-  openSearch(false);
-  searchActive = -1;
-  els.surahSearch.removeAttribute("aria-activedescendant");
-}
-
-function renderSearchResults(matches) {
-  searchMatches = matches.slice(0, 10);
-  searchActive = -1;
-  if (!matches.length) {
-    els.surahResults.innerHTML =
-      `<li class="search-none" aria-disabled="true">${i18n.t("search_none")}</li>`;
-  } else {
-    els.surahResults.innerHTML = searchMatches
-      .map(
-        (s, i) =>
-          `<li class="search-opt" role="option" id="search-opt-${i}" data-num="${s.number}">` +
-          `<span class="search-num">${s.number}</span>` +
-          `<span class="search-name">${escapeHtml(s.englishName)}</span>` +
-          `<span class="search-ar">${escapeHtml(s.name)}</span>` +
-          `<span class="search-mean">${escapeHtml(s.englishNameTranslation)}</span></li>`
-      )
-      .join("");
-  }
-  openSearch(true);
-}
-
-function highlightActive() {
-  const opts = els.surahResults.querySelectorAll(".search-opt");
-  opts.forEach((el, i) => el.classList.toggle("active", i === searchActive));
-  if (searchActive >= 0 && opts[searchActive]) {
-    els.surahSearch.setAttribute("aria-activedescendant", `search-opt-${searchActive}`);
-    opts[searchActive].scrollIntoView({ block: "nearest" });
-  } else {
-    els.surahSearch.removeAttribute("aria-activedescendant");
-  }
-}
-
-function pickSurah(number) {
-  const s = surahList.find((x) => x.number === Number(number));
-  els.select.value = String(number);
-  els.surahSearch.value = s ? `${s.number}. ${s.englishName}` : "";
-  closeSearch();
-  loadSurah(number);
-}
-
-function wireSurahSearch() {
-  els.surahSearch.addEventListener("input", () => {
-    const q = els.surahSearch.value.trim();
-    if (!q) return closeSearch();
-    renderSearchResults(searchSurahs(q));
+  input.addEventListener("input", () => {
+    const q = input.value.trim();
+    if (!q) return close();
+    render(searchSurahs(q));
   });
-  els.surahSearch.addEventListener("focus", () => {
-    const q = els.surahSearch.value.trim();
-    if (q) renderSearchResults(searchSurahs(q));
+  input.addEventListener("focus", () => {
+    const q = input.value.trim();
+    if (q) render(searchSurahs(q));
   });
-  els.surahSearch.addEventListener("keydown", (e) => {
-    const max = searchMatches.length;
+  input.addEventListener("keydown", (e) => {
+    const max = matches.length;
     if (e.key === "ArrowDown") {
       e.preventDefault();
-      if (max) searchActive = (searchActive + 1) % max;
-      highlightActive();
+      if (max) active = (active + 1) % max;
+      highlight();
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
-      if (max) searchActive = (searchActive - 1 + max) % max;
-      highlightActive();
+      if (max) active = (active - 1 + max) % max;
+      highlight();
     } else if (e.key === "Enter") {
       e.preventDefault();
-      const pick = searchActive >= 0 ? searchMatches[searchActive] : searchMatches[0];
-      if (pick) pickSurah(pick.number);
+      const sel = active >= 0 ? matches[active] : matches[0];
+      if (sel) pick(sel.number);
     } else if (e.key === "Escape") {
-      els.surahSearch.value = "";
-      closeSearch();
+      input.value = "";
+      close();
     }
   });
   // mousedown (not click) so the pick runs before the input's blur closes the list
-  els.surahResults.addEventListener("mousedown", (e) => {
+  results.addEventListener("mousedown", (e) => {
     const li = e.target.closest(".search-opt");
     if (!li) return;
     e.preventDefault();
-    pickSurah(li.dataset.num);
+    pick(li.dataset.num);
   });
-  els.surahSearch.addEventListener("blur", () => setTimeout(closeSearch, 120));
+  input.addEventListener("blur", () => setTimeout(close, 120));
+}
+
+function wireSurahSearch() {
+  makeSurahSearch({ input: els.surahSearch, results: els.surahResults, select: els.select });
+  makeSurahSearch({ input: els.drillSearch, results: els.drillResults, select: els.drillSurah });
+  makeSurahSearch({ input: els.simSearch, results: els.simResults, select: els.simFilter });
 }
 
 function renderSurah(number, surah) {

@@ -83,6 +83,74 @@ select {
   background: #fff;
 }
 
+/* surah search box + results dropdown */
+.surah-search {
+  position: relative;
+  margin-bottom: 0.5rem;
+}
+.surah-search input {
+  width: 100%;
+  padding: 0.7rem 0.8rem;
+  font-size: 1rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+}
+.surah-search input:focus {
+  outline: none;
+  border-color: var(--green);
+  box-shadow: 0 0 0 2px rgba(13, 79, 60, 0.15);
+}
+.search-results {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  margin: 0;
+  padding: 0.25rem;
+  list-style: none;
+  max-height: 18rem;
+  overflow-y: auto;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+.search-opt {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding: 0.5rem 0.6rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.search-opt:hover,
+.search-opt.active {
+  background: #f0ead2;
+}
+.search-num {
+  flex: 0 0 1.8rem;
+  text-align: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--gold);
+  background: var(--green);
+  border-radius: 4px;
+  padding: 0.05rem 0;
+}
+.search-name { font-weight: 600; color: var(--green); }
+.search-ar {
+  font-family: "Amiri Quran", "Scheherazade New", "Amiri", serif;
+  color: #333;
+}
+.search-mean {
+  margin-inline-start: auto;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+.search-none { padding: 0.6rem; color: var(--muted); font-size: 0.9rem; }
+
 .surah-head { border-bottom: 1px solid var(--line); padding-bottom: 0.7rem; margin-bottom: 0.5rem; }
 .surah-head h2 { margin: 0; color: var(--green); }
 .meta { margin: 0.2rem 0 0; color: var(--muted); font-size: 0.85rem; }

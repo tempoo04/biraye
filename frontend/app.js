@@ -22,6 +22,8 @@ const els = {
   logExport: document.getElementById("log-export"),
   // read
   select: document.getElementById("surah-select"),
+  surahSearch: document.getElementById("surah-search"),
+  surahResults: document.getElementById("surah-results"),
   reader: document.getElementById("reader"),
   title: document.getElementById("surah-title"),
   meta: document.getElementById("surah-meta"),
@@ -77,6 +79,7 @@ let playingBtn = null;
 let reviewQueue = []; // flattened list of due items for the chosen day
 let currentItem = null;
 let surahAyahCounts = {}; // surah number -> ayah count
+let surahList = []; // full surah index, for the search box
 let currentReadSurah = null; // last surah object loaded in the Read tab
 let currentReadNumber = null;
 let activeTab = "read";
@@ -192,6 +195,7 @@ async function loadSurahIndex() {
     const res = await fetch("/api/surahs");
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const surahs = await res.json();
+    surahList = surahs;
     surahAyahCounts = Object.fromEntries(surahs.map((s) => [s.number, s.ayahCount]));
     const opts =
       `<option value="">${i18n.t("opt_pick")}</option>` +
@@ -231,6 +235,123 @@ async function loadSurah(number) {
   } catch (err) {
     setStatus(i18n.t("err_surah", { M: err.message }), true);
   }
+}
+
+/* ---------- surah search ---------- */
+// Diacritic/tatweel-insensitive normalization so "Fatiha", "fātiḥah", the
+// Arabic name and the English meaning all match one loose query.
+function normalizeSearch(s) {
+  return (s || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯؐ-ًؚ-ٰٟۖ-ۭـ]/g, "")
+    .trim();
+}
+
+function searchSurahs(query) {
+  const q = normalizeSearch(query);
+  if (!q) return [];
+  const digits = q.replace(/\D/g, "");
+  return surahList.filter((s) => {
+    if (digits && String(s.number).startsWith(digits)) return true;
+    return (
+      normalizeSearch(s.englishName).includes(q) ||
+      normalizeSearch(s.name).includes(q)
+    );
+  });
+}
+
+let searchMatches = []; // current result list (capped)
+let searchActive = -1; // highlighted index for keyboard nav
+
+function openSearch(open) {
+  els.surahResults.hidden = !open;
+  els.surahSearch.setAttribute("aria-expanded", open ? "true" : "false");
+}
+
+function closeSearch() {
+  openSearch(false);
+  searchActive = -1;
+  els.surahSearch.removeAttribute("aria-activedescendant");
+}
+
+function renderSearchResults(matches) {
+  searchMatches = matches.slice(0, 10);
+  searchActive = -1;
+  if (!matches.length) {
+    els.surahResults.innerHTML =
+      `<li class="search-none" aria-disabled="true">${i18n.t("search_none")}</li>`;
+  } else {
+    els.surahResults.innerHTML = searchMatches
+      .map(
+        (s, i) =>
+          `<li class="search-opt" role="option" id="search-opt-${i}" data-num="${s.number}">` +
+          `<span class="search-num">${s.number}</span>` +
+          `<span class="search-name">${escapeHtml(s.englishName)}</span>` +
+          `<span class="search-ar">${escapeHtml(s.name)}</span>` +
+          `<span class="search-mean">${escapeHtml(s.englishNameTranslation)}</span></li>`
+      )
+      .join("");
+  }
+  openSearch(true);
+}
+
+function highlightActive() {
+  const opts = els.surahResults.querySelectorAll(".search-opt");
+  opts.forEach((el, i) => el.classList.toggle("active", i === searchActive));
+  if (searchActive >= 0 && opts[searchActive]) {
+    els.surahSearch.setAttribute("aria-activedescendant", `search-opt-${searchActive}`);
+    opts[searchActive].scrollIntoView({ block: "nearest" });
+  } else {
+    els.surahSearch.removeAttribute("aria-activedescendant");
+  }
+}
+
+function pickSurah(number) {
+  const s = surahList.find((x) => x.number === Number(number));
+  els.select.value = String(number);
+  els.surahSearch.value = s ? `${s.number}. ${s.englishName}` : "";
+  closeSearch();
+  loadSurah(number);
+}
+
+function wireSurahSearch() {
+  els.surahSearch.addEventListener("input", () => {
+    const q = els.surahSearch.value.trim();
+    if (!q) return closeSearch();
+    renderSearchResults(searchSurahs(q));
+  });
+  els.surahSearch.addEventListener("focus", () => {
+    const q = els.surahSearch.value.trim();
+    if (q) renderSearchResults(searchSurahs(q));
+  });
+  els.surahSearch.addEventListener("keydown", (e) => {
+    const max = searchMatches.length;
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      if (max) searchActive = (searchActive + 1) % max;
+      highlightActive();
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      if (max) searchActive = (searchActive - 1 + max) % max;
+      highlightActive();
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      const pick = searchActive >= 0 ? searchMatches[searchActive] : searchMatches[0];
+      if (pick) pickSurah(pick.number);
+    } else if (e.key === "Escape") {
+      els.surahSearch.value = "";
+      closeSearch();
+    }
+  });
+  // mousedown (not click) so the pick runs before the input's blur closes the list
+  els.surahResults.addEventListener("mousedown", (e) => {
+    const li = e.target.closest(".search-opt");
+    if (!li) return;
+    e.preventDefault();
+    pickSurah(li.dataset.num);
+  });
+  els.surahSearch.addEventListener("blur", () => setTimeout(closeSearch, 120));
 }
 
 function renderSurah(number, surah) {
@@ -976,6 +1097,7 @@ window.addEventListener("langchange", () => {
 i18n.applyStatic();
 syncLangButton();
 els.select.addEventListener("change", (e) => loadSurah(e.target.value));
+wireSurahSearch();
 loadSurahIndex();
 refreshDueBadge();
 

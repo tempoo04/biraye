@@ -43,7 +43,21 @@
     <!-- READ VIEW -->
     <div id="view-read">
       <section id="picker" class="panel">
-        <label for="surah-select" data-i18n="read_surah_label">Surah</label>
+        <label for="surah-search" data-i18n="read_surah_label">Surah</label>
+        <div class="surah-search">
+          <input
+            id="surah-search"
+            type="search"
+            autocomplete="off"
+            role="combobox"
+            aria-expanded="false"
+            aria-controls="surah-results"
+            aria-label="Search surah"
+            data-i18n-ph="search_ph"
+            placeholder="Search surah — number, name or meaning"
+          />
+          <ul id="surah-results" class="search-results" role="listbox" hidden></ul>
+        </div>
         <select id="surah-select" aria-label="Choose a surah">
           <option value="" data-i18n="opt_loading">Loading…</option>
         </select>
@@ -61,7 +75,21 @@
     <!-- DRILL VIEW (repeat trainer) -->
     <div id="view-drill" hidden>
       <section class="panel">
-        <label for="drill-surah" data-i18n="read_surah_label">Surah</label>
+        <label for="drill-search" data-i18n="read_surah_label">Surah</label>
+        <div class="surah-search">
+          <input
+            id="drill-search"
+            type="search"
+            autocomplete="off"
+            role="combobox"
+            aria-expanded="false"
+            aria-controls="drill-results"
+            aria-label="Search surah"
+            data-i18n-ph="search_ph"
+            placeholder="Search surah — number or name"
+          />
+          <ul id="drill-results" class="search-results" role="listbox" hidden></ul>
+        </div>
         <select id="drill-surah" aria-label="Choose a surah for drilling">
           <option value="" data-i18n="opt_loading">Loading…</option>
         </select>
@@ -108,7 +136,21 @@
       <section class="panel">
         <h2 data-i18n="tab_similar">Similar</h2>
         <p class="meta" data-i18n="sim_intro">Browse verse pairs that are easy to mix up. Tap one to see the difference.</p>
-        <label for="sim-filter" data-i18n="read_surah_label">Surah</label>
+        <label for="sim-search" data-i18n="read_surah_label">Surah</label>
+        <div class="surah-search">
+          <input
+            id="sim-search"
+            type="search"
+            autocomplete="off"
+            role="combobox"
+            aria-expanded="false"
+            aria-controls="sim-results"
+            aria-label="Search surah"
+            data-i18n-ph="search_ph"
+            placeholder="Search surah — number or name"
+          />
+          <ul id="sim-results" class="search-results" role="listbox" hidden></ul>
+        </div>
         <select id="sim-filter" aria-label="Filter pairs by surah"></select>
         <p id="sim-count" class="meta"></p>
         <div id="sim-list" class="sim-list"></div>

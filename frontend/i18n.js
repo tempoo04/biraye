@@ -20,6 +20,8 @@ const I18N_DICT = {
     sim_all: "All surahs",
 
     read_surah_label: "Surah",
+    search_ph: "Search surah — number or name",
+    search_none: "No surah matches",
     opt_pick: "— pick a surah —",
     opt_loading: "Loading…",
     btn_listen: "▶ Listen",
@@ -131,6 +133,8 @@ const I18N_DICT = {
     sim_all: "Bütün surələr",
 
     read_surah_label: "Surə",
+    search_ph: "Surə axtar — nömrə və ya ad",
+    search_none: "Uyğun surə yoxdur",
     opt_pick: "— surə seçin —",
     opt_loading: "Yüklənir…",
     btn_listen: "▶ Dinlə",

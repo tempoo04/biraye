@@ -13,6 +13,8 @@ const els = {
   viewReview: document.getElementById("view-review"),
   viewLog: document.getElementById("view-log"),
   simFilter: document.getElementById("sim-filter"),
+  simSearch: document.getElementById("sim-search"),
+  simResults: document.getElementById("sim-results"),
   simCount: document.getElementById("sim-count"),
   simList: document.getElementById("sim-list"),
   dueBadge: document.getElementById("due-badge"),
@@ -22,6 +24,8 @@ const els = {
   logExport: document.getElementById("log-export"),
   // read
   select: document.getElementById("surah-select"),
+  surahSearch: document.getElementById("surah-search"),
+  surahResults: document.getElementById("surah-results"),
   reader: document.getElementById("reader"),
   title: document.getElementById("surah-title"),
   meta: document.getElementById("surah-meta"),
@@ -45,6 +49,8 @@ const els = {
   rvSimilar: document.getElementById("rv-similar"),
   // drill
   drillSurah: document.getElementById("drill-surah"),
+  drillSearch: document.getElementById("drill-search"),
+  drillResults: document.getElementById("drill-results"),
   drillFrom: document.getElementById("drill-from"),
   drillTo: document.getElementById("drill-to"),
   drillEach: document.getElementById("drill-each"),
@@ -77,6 +83,7 @@ let playingBtn = null;
 let reviewQueue = []; // flattened list of due items for the chosen day
 let currentItem = null;
 let surahAyahCounts = {}; // surah number -> ayah count
+let surahList = []; // full surah index, for the search box
 let currentReadSurah = null; // last surah object loaded in the Read tab
 let currentReadNumber = null;
 let activeTab = "read";
@@ -192,6 +199,7 @@ async function loadSurahIndex() {
     const res = await fetch("/api/surahs");
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const surahs = await res.json();
+    surahList = surahs;
     surahAyahCounts = Object.fromEntries(surahs.map((s) => [s.number, s.ayahCount]));
     const opts =
       `<option value="">${i18n.t("opt_pick")}</option>` +
@@ -231,6 +239,124 @@ async function loadSurah(number) {
   } catch (err) {
     setStatus(i18n.t("err_surah", { M: err.message }), true);
   }
+}
+
+/* ---------- surah search ---------- */
+// Diacritic/tatweel-insensitive normalization so "Fatiha", "fātiḥah" and the
+// Arabic name all match one loose query.
+function normalizeSearch(s) {
+  return (s || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯؐ-ًؚ-ٰٟۖ-ۭـ]/g, "")
+    .trim();
+}
+
+// Match surahs by number (prefix) or by English / Arabic name — no meanings.
+function searchSurahs(query) {
+  const q = normalizeSearch(query);
+  if (!q) return [];
+  const digits = q.replace(/\D/g, "");
+  return surahList.filter((s) => {
+    if (digits && String(s.number).startsWith(digits)) return true;
+    return normalizeSearch(s.englishName).includes(q) || normalizeSearch(s.name).includes(q);
+  });
+}
+
+// Reusable typeahead bound to one (input, results-list, select) triple. The
+// select stays as source of truth / fallback; picking a result sets its value
+// and fires `change`, so each tab's existing change handler still runs.
+function makeSurahSearch({ input, results, select }) {
+  let matches = []; // current results (capped)
+  let active = -1; // highlighted index for keyboard nav
+
+  const open = (show) => {
+    results.hidden = !show;
+    input.setAttribute("aria-expanded", show ? "true" : "false");
+  };
+  const close = () => {
+    open(false);
+    active = -1;
+    input.removeAttribute("aria-activedescendant");
+  };
+  const render = (found) => {
+    matches = found.slice(0, 10);
+    active = -1;
+    if (!found.length) {
+      results.innerHTML = `<li class="search-none" aria-disabled="true">${i18n.t("search_none")}</li>`;
+    } else {
+      results.innerHTML = matches
+        .map(
+          (s, i) =>
+            `<li class="search-opt" role="option" id="${input.id}-opt-${i}" data-num="${s.number}">` +
+            `<span class="search-num">${s.number}</span>` +
+            `<span class="search-name">${escapeHtml(s.englishName)}</span>` +
+            `<span class="search-ar">${escapeHtml(s.name)}</span></li>`
+        )
+        .join("");
+    }
+    open(true);
+  };
+  const highlight = () => {
+    const opts = results.querySelectorAll(".search-opt");
+    opts.forEach((el, i) => el.classList.toggle("active", i === active));
+    if (active >= 0 && opts[active]) {
+      input.setAttribute("aria-activedescendant", `${input.id}-opt-${active}`);
+      opts[active].scrollIntoView({ block: "nearest" });
+    } else {
+      input.removeAttribute("aria-activedescendant");
+    }
+  };
+  const pick = (number) => {
+    const s = surahList.find((x) => x.number === Number(number));
+    input.value = s ? `${s.number}. ${s.englishName}` : "";
+    select.value = String(number);
+    select.dispatchEvent(new Event("change"));
+    close();
+  };
+
+  input.addEventListener("input", () => {
+    const q = input.value.trim();
+    if (!q) return close();
+    render(searchSurahs(q));
+  });
+  input.addEventListener("focus", () => {
+    const q = input.value.trim();
+    if (q) render(searchSurahs(q));
+  });
+  input.addEventListener("keydown", (e) => {
+    const max = matches.length;
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      if (max) active = (active + 1) % max;
+      highlight();
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      if (max) active = (active - 1 + max) % max;
+      highlight();
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      const sel = active >= 0 ? matches[active] : matches[0];
+      if (sel) pick(sel.number);
+    } else if (e.key === "Escape") {
+      input.value = "";
+      close();
+    }
+  });
+  // mousedown (not click) so the pick runs before the input's blur closes the list
+  results.addEventListener("mousedown", (e) => {
+    const li = e.target.closest(".search-opt");
+    if (!li) return;
+    e.preventDefault();
+    pick(li.dataset.num);
+  });
+  input.addEventListener("blur", () => setTimeout(close, 120));
+}
+
+function wireSurahSearch() {
+  makeSurahSearch({ input: els.surahSearch, results: els.surahResults, select: els.select });
+  makeSurahSearch({ input: els.drillSearch, results: els.drillResults, select: els.drillSurah });
+  makeSurahSearch({ input: els.simSearch, results: els.simResults, select: els.simFilter });
 }
 
 function renderSurah(number, surah) {
@@ -976,6 +1102,7 @@ window.addEventListener("langchange", () => {
 i18n.applyStatic();
 syncLangButton();
 els.select.addEventListener("change", (e) => loadSurah(e.target.value));
+wireSurahSearch();
 loadSurahIndex();
 refreshDueBadge();
 

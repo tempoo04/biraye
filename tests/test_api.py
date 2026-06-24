@@ -97,3 +97,13 @@ def test_queue_rejects_bad_as_of(client):
     res = client.get("/api/queue", params={"as_of": "24-06-2026"})
     assert res.status_code == 422
     assert "YYYY-MM-DD" in res.json()["detail"]
+
+
+def test_log_lists_tracked_ayahs_in_order(client):
+    client.post("/api/memorize", json={"surah": 2, "ayah": 5})
+    client.post("/api/memorize", json={"surah": 1, "ayah": 1})
+
+    log = client.get("/api/log").json()
+    refs = [(row["surah"], row["ayah"]) for row in log]
+    assert refs == [(1, 1), (2, 5)]  # ordered by surah, ayah
+    assert log[0]["stage"] == "sabaq"

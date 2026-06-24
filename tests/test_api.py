@@ -91,3 +91,9 @@ def test_queue_groups_by_tier_and_enriches(client, monkeypatch):
     assert item["surahName"] == "Surah1"
     # scaffold derived from interval maturity (new item -> full)
     assert item["scaffold"] == "full"
+
+
+def test_queue_rejects_bad_as_of(client):
+    res = client.get("/api/queue", params={"as_of": "24-06-2026"})
+    assert res.status_code == 422
+    assert "YYYY-MM-DD" in res.json()["detail"]

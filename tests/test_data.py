@@ -34,11 +34,11 @@ def test_normalize_segment_three_int_row():
 
 
 def test_normalize_segment_rejects_bad_rows():
-    assert data._normalize_segment([0, 100, 200]) is None      # word_no < 1
-    assert data._normalize_segment([1, 200, 200]) is None      # end <= start
-    assert data._normalize_segment([1, 2]) is None             # too short
-    assert data._normalize_segment(["x", "y", "z"]) is None    # non-numeric
-    assert data._normalize_segment([]) is None                 # empty
+    assert data._normalize_segment([0, 100, 200]) is None  # word_no < 1
+    assert data._normalize_segment([1, 200, 200]) is None  # end <= start
+    assert data._normalize_segment([1, 2]) is None  # too short
+    assert data._normalize_segment(["x", "y", "z"]) is None  # non-numeric
+    assert data._normalize_segment([]) is None  # empty
 
 
 class _FakeResponse:
@@ -82,11 +82,16 @@ def test_get_surah_maps_translations_by_language(monkeypatch):
     monkeypatch.setattr(
         data,
         "get_surah_index",
-        lambda: [{
-            "number": 1, "name": "الفاتحة", "englishName": "Al-Faatiha",
-            "englishNameTranslation": "The Opening", "ayahCount": 7,
-            "revelationType": "Meccan",
-        }],
+        lambda: [
+            {
+                "number": 1,
+                "name": "الفاتحة",
+                "englishName": "Al-Faatiha",
+                "englishNameTranslation": "The Opening",
+                "ayahCount": 7,
+                "revelationType": "Meccan",
+            }
+        ],
     )
     monkeypatch.setattr(data.httpx, "get", lambda *a, **k: _FakeResponse(verses_payload))
 

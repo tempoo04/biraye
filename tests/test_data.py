@@ -39,3 +39,66 @@ def test_normalize_segment_rejects_bad_rows():
     assert data._normalize_segment([1, 2]) is None             # too short
     assert data._normalize_segment(["x", "y", "z"]) is None    # non-numeric
     assert data._normalize_segment([]) is None                 # empty
+
+
+class _FakeResponse:
+    def __init__(self, payload):
+        self._payload = payload
+
+    def raise_for_status(self):
+        pass
+
+    def json(self):
+        return self._payload
+
+
+def test_get_surah_maps_translations_by_language(monkeypatch):
+    """get_surah keys each translation to its UI language by resource_id and
+    keeps a flat English `translation` for backward compatibility."""
+    verses_payload = {
+        "verses": [
+            {
+                "verse_number": 1,
+                "words": [
+                    {"text_uthmani": "بِسْمِ", "char_type_name": "word"},
+                    {"text_uthmani": "ٱللَّهِ", "char_type_name": "word"},
+                    {"text_uthmani": "۝", "char_type_name": "end"},
+                ],
+                "translations": [
+                    {"resource_id": 20, "text": "In the name of Allah<sup foot_note=1>1</sup>"},
+                    {"resource_id": 23, "text": "Allahın adı ilə"},
+                    {"resource_id": 999, "text": "ignored — unknown id"},
+                ],
+                "audio": {
+                    "url": "Alafasy/mp3/001001.mp3",
+                    "segments": [[1, 1, 0, 500], [1, 2, 500, 900]],
+                },
+            }
+        ]
+    }
+
+    monkeypatch.setattr(data, "_read_cache", lambda name: None)
+    monkeypatch.setattr(data, "_write_cache", lambda name, payload: None)
+    monkeypatch.setattr(
+        data,
+        "get_surah_index",
+        lambda: [{
+            "number": 1, "name": "الفاتحة", "englishName": "Al-Faatiha",
+            "englishNameTranslation": "The Opening", "ayahCount": 7,
+            "revelationType": "Meccan",
+        }],
+    )
+    monkeypatch.setattr(data.httpx, "get", lambda *a, **k: _FakeResponse(verses_payload))
+
+    surah = data.get_surah(1)
+    assert surah["englishName"] == "Al-Faatiha"
+    ayah = surah["ayahs"][0]
+    # only pronounced words kept, joined in order
+    assert ayah["words"] == ["بِسْمِ", "ٱللَّهِ"]
+    assert ayah["arabic"] == "بِسْمِ ٱللَّهِ"
+    # translations keyed by language, footnote cleaned, unknown id dropped
+    assert ayah["translations"] == {"en": "In the name of Allah", "az": "Allahın adı ilə"}
+    assert ayah["translation"] == "In the name of Allah"
+    # audio prefixed with the CDN base, segments normalized to [idx, start, end]
+    assert ayah["audio"] == data.QURAN_AUDIO_BASE + "Alafasy/mp3/001001.mp3"
+    assert ayah["segments"] == [[0, 0, 500], [1, 500, 900]]

@@ -21,3 +21,21 @@ def test_clean_translation_strips_markup_and_unescapes():
 def test_clean_translation_handles_empty():
     assert data._clean_translation("") == ""
     assert data._clean_translation(None) == ""
+
+
+def test_normalize_segment_four_int_row():
+    # [seg_no, word_no, start, end] -> [word_no-1, start, end]
+    assert data._normalize_segment([5, 2, 100, 200]) == [1, 100, 200]
+
+
+def test_normalize_segment_three_int_row():
+    # [word_no, start, end] -> [word_no-1, start, end]
+    assert data._normalize_segment([3, 100, 200]) == [2, 100, 200]
+
+
+def test_normalize_segment_rejects_bad_rows():
+    assert data._normalize_segment([0, 100, 200]) is None      # word_no < 1
+    assert data._normalize_segment([1, 200, 200]) is None      # end <= start
+    assert data._normalize_segment([1, 2]) is None             # too short
+    assert data._normalize_segment(["x", "y", "z"]) is None    # non-numeric
+    assert data._normalize_segment([]) is None                 # empty

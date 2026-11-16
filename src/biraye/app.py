@@ -8,6 +8,7 @@ or:  py -m uvicorn biraye.app:app --reload --app-dir src
 from __future__ import annotations
 
 import mimetypes
+from contextlib import asynccontextmanager
 from datetime import date
 from pathlib import Path
 
@@ -26,12 +27,14 @@ mimetypes.add_type("font/woff", ".woff")
 
 FRONTEND_DIR = Path(__file__).resolve().parents[2] / "frontend"
 
-app = FastAPI(title="BirAye", version=__version__)
 
-
-@app.on_event("startup")
-def _startup() -> None:
+@asynccontextmanager
+async def _lifespan(app: FastAPI):
     db.init_db()
+    yield
+
+
+app = FastAPI(title="BirAye", version=__version__, lifespan=_lifespan)
 
 
 @app.middleware("http")

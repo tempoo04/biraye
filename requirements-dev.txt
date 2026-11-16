@@ -1,5 +1,5 @@
 -r requirements.txt
-pytest==9.0.3
-coverage==7.14.1
-ruff==0.15.16
-pre-commit==4.6.0
+pytest==9.2.0
+coverage==7.17.2
+ruff==0.17.4
+pre-commit==4.7.0

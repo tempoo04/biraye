@@ -174,11 +174,11 @@ shows these with a short note on how each is applied.)
 
 ## Status
 
-Built milestone-by-milestone — see [ROADMAP.md](ROADMAP.md). Done: M0–M6
+Built milestone-by-milestone — see [ROADMAP.md](ROADMAP.md). Done: **M0–M7**
 (skeleton, read+listen, three-tier scheduler, scaffold-withdrawal recall,
-mutashabihat engine, PWA + teacher logbook, repeat trainer), the similar-verse
-browser, and English/Azerbaijani localization — plus CI / CodeQL / Dependabot /
-pre-commit and a test suite.
+mutashabihat engine, installable offline PWA + teacher logbook, repeat trainer,
+similar-verse browser, English/Azerbaijani localization, crescent brand) — plus
+CI / CodeQL / Lighthouse / Dependabot / pre-commit and a test suite.
 
 > ⚠️ **Alpha.** In testing with early users. Data is per-device for now; accounts,
 > cloud sync, and a persistent database are planned.

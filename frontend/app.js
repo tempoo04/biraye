@@ -1106,16 +1106,12 @@ wireSurahSearch();
 loadSurahIndex();
 refreshDueBadge();
 
-// Service worker is intentionally DISABLED during active development so the app
-// always loads fresh from the server (no stale-cache surprises). Any worker that
-// a device installed previously is torn down here and by the kill-switch sw.js.
-// (Re-enable a proper offline/installable worker before launch.)
+// Register the offline service worker (see sw.js). App code is served
+// network-first, so an online device still picks up new code on reload; the
+// cache only kicks in when offline, making the PWA installable and usable
+// without a connection.
 if ("serviceWorker" in navigator) {
-  navigator.serviceWorker
-    .getRegistrations()
-    .then((regs) => regs.forEach((r) => r.unregister()))
-    .catch(() => {});
-  if (window.caches) {
-    caches.keys().then((keys) => keys.forEach((k) => caches.delete(k))).catch(() => {});
-  }
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/sw.js").catch(() => {});
+  });
 }

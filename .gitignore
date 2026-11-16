@@ -16,6 +16,8 @@ data/*.db
 .claude-flow/
 .swarm/
 .claude/
+CLAUDE.md
+.mcp.json
 
 # Test / coverage / tooling artifacts
 .coverage

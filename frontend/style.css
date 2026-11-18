@@ -20,6 +20,42 @@
 
 * { box-sizing: border-box; }
 
+/* --- opening splash: crescent on brand green, fades in then out --- */
+#splash {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  background: var(--green);
+  color: #fff;
+  animation: splash-out 0.45s ease 1.05s forwards;
+}
+#splash .splash-logo {
+  width: 96px;
+  height: 96px;
+  animation: splash-pop 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+#splash .splash-name {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  animation: splash-pop 0.6s ease 0.25s both;
+}
+@keyframes splash-pop {
+  from { opacity: 0; transform: scale(0.7); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes splash-out {
+  to { opacity: 0; visibility: hidden; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #splash { display: none; }
+}
+
 body {
   margin: 0;
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;

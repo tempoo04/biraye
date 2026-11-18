@@ -15,7 +15,7 @@
  */
 "use strict";
 
-const VERSION = "v1";
+const VERSION = "v2";
 const SHELL_CACHE = `biraye-shell-${VERSION}`;
 const ASSET_CACHE = `biraye-assets-${VERSION}`;
 const API_CACHE = `biraye-api-${VERSION}`;

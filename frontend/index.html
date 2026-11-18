@@ -21,6 +21,10 @@
   <link rel="stylesheet" href="/static/style.css" />
 </head>
 <body>
+  <div id="splash" aria-hidden="true">
+    <img class="splash-logo" src="/static/logo.svg" alt="" width="96" height="96" />
+    <div class="splash-name">BirAye</div>
+  </div>
   <header class="topbar">
     <button id="lang-toggle" class="lang-btn" type="button" aria-label="Change language">EN</button>
     <div class="brand">
@@ -276,5 +280,12 @@
 
   <script src="/static/i18n.js"></script>
   <script src="/static/app.js"></script>
+  <!-- Safety: a decorative overlay must never trap the app, even if CSS/animation fails. -->
+  <script>
+    setTimeout(function () {
+      var s = document.getElementById("splash");
+      if (s) s.remove();
+    }, 1800);
+  </script>
 </body>
 </html>
